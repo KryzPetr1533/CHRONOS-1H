@@ -1,7 +1,5 @@
 # CHRONOS-1H
 
-# CHRONOS-1H Bot — BTCUSDT Hourly Forecast (Telegram)
-
 ## Task
 
 Forecast the **next 1-hour log-return** of **BTCUSDT** using **public Binance data** and deliver results via a **Telegram bot**.
