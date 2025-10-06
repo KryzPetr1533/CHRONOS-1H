@@ -1,4 +1,4 @@
-# CHRONOS-1H
+# CHRONOS-1H, Bot — BTCUSDT Hourly Forecast
 
 ## Task
 
