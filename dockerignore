@@ -1,0 +1,15 @@
+# Build context hygiene
+.git/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+*.parquet
+*.csv
+*.zip
+.DS_Store
+.venv/
+data/
+dist/
+build/
