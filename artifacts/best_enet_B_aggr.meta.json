@@ -1,0 +1,34 @@
+{
+  "model_path": "/home/devdem/CHRONOS-1H/artifacts/best_enet_B_aggr.joblib",
+  "raw_cols": [
+    "close",
+    "log_ret_1h",
+    "volume",
+    "num_trades",
+    "premium_close",
+    "fundingRate",
+    "markPrice",
+    "taker_buy_base",
+    "taker_imbalance",
+    "buyVol",
+    "sellVol",
+    "sumOpenInterest",
+    "sumOpenInterestValue"
+  ],
+  "output_cols": [
+    "close",
+    "log_ret_1h",
+    "volume",
+    "num_trades",
+    "taker_buy_share",
+    "premium_close",
+    "fundingRate",
+    "mark_minus_close",
+    "taker_imbalance",
+    "buy_share",
+    "net_taker_flow",
+    "avg_open_price",
+    "oi_to_volume"
+  ],
+  "target": "target_log_ret_1h"
+}

@@ -1,0 +1,45 @@
+data_path: btcusdt_1h_merged.csv
+artifacts_dir: artifacts
+
+columns:
+  required_raw:
+    - close
+    - log_ret_1h
+    - volume
+    - num_trades
+    - premium_close
+    - fundingRate
+    - markPrice
+    - taker_buy_base
+    - taker_imbalance
+    - buyVol
+    - sellVol
+    - sumOpenInterest
+    - sumOpenInterestValue
+
+  output_cols:
+    - close
+    - log_ret_1h
+    - volume
+    - num_trades
+    - taker_buy_share
+    - premium_close
+    - fundingRate
+    - mark_minus_close
+    - taker_imbalance
+    - buy_share
+    - net_taker_flow
+    - avg_open_price
+    - oi_to_volume
+
+split:
+  train_frac: 0.6
+  val_frac: 0.2
+  test_frac: 0.2
+  cv_splits: 5
+
+grid:
+  alpha: [0.0005, 0.001, 0.01, 0.1]
+  l1_ratio: [0.1, 0.3, 0.5, 0.7, 0.9]
+
+n_jobs: -1

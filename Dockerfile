@@ -34,6 +34,8 @@ RUN pip install --upgrade pip \
     && pip install -r /tmp/requirements.txt \
     && pip install jupyterlab
 
+ENV PYTHONPATH="/workspace:${PYTHONPATH}"
+
 # Switch to non-root user for runtime
 USER ${NB_USER}
 
