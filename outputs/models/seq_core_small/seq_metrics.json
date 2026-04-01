@@ -1,0 +1,103 @@
+{
+  "data_csv": "outputs/datasets/btcusdt_core_seq_small.csv",
+  "best_model": {
+    "model_kind": "gru",
+    "lookback": 168,
+    "hidden_dim": 32,
+    "dropout": 0.0
+  },
+  "split": {
+    "train_frac": 0.7,
+    "val_frac": 0.15,
+    "test_frac": 0.15
+  },
+  "n_rows": {
+    "total": 24714,
+    "train_target_positions": 17299,
+    "val_target_positions": 3707,
+    "test_target_positions": 3708
+  },
+  "feature_cols": [
+    "log_ret_1h",
+    "premium_chg",
+    "fundingRate",
+    "vol_chg",
+    "trades_chg",
+    "taker_buy_share",
+    "rv_24",
+    "hour_sin",
+    "hour_cos",
+    "dow_sin",
+    "dow_cos"
+  ],
+  "baseline": {
+    "val": {
+      "rmse": 0.007921589114918479,
+      "mae": 0.0052487407171314514,
+      "nrmse": 1.429630995726389,
+      "mae_over_std": 0.9472546870186285,
+      "r2": -1.0438447839416263,
+      "pearson_corr": -0.021936042025959647,
+      "spearman_corr": -0.043077431942591206,
+      "directional_accuracy": 0.4796221322537112,
+      "top20_directional_accuracy": 0.46495956873315364,
+      "sign_strategy_mean": -6.591747352956078e-05,
+      "sign_strategy_sharpe": -1.1135097174857251
+    },
+    "test": {
+      "rmse": 0.005083677587155301,
+      "mae": 0.0034986633723400325,
+      "nrmse": 1.413177776485551,
+      "mae_over_std": 0.9725701995121206,
+      "r2": -0.997071427952646,
+      "pearson_corr": 0.0015369874521576272,
+      "spearman_corr": -0.0027132399872053254,
+      "directional_accuracy": 0.5078209277238404,
+      "top20_directional_accuracy": 0.5094339622641509,
+      "sign_strategy_mean": 8.343283497871289e-05,
+      "sign_strategy_sharpe": 2.171305215527867
+    }
+  },
+  "model": {
+    "val": {
+      "rmse": 0.005543987889793171,
+      "mae": 0.0035704623000178334,
+      "nrmse": 1.0005387570851834,
+      "mae_over_std": 0.6443711607769445,
+      "r2": -0.0010778044295638445,
+      "pearson_corr": 0.01882030738547024,
+      "spearman_corr": 0.0094031211964094,
+      "directional_accuracy": 0.4962223421478683,
+      "top20_directional_accuracy": 0.5121293800539084,
+      "sign_strategy_mean": -7.982643186397209e-05,
+      "sign_strategy_sharpe": -1.348500388233256
+    },
+    "test": {
+      "rmse": 0.00359966445652846,
+      "mae": 0.0024440229866321073,
+      "nrmse": 1.0006468202515373,
+      "mae_over_std": 0.6793977215736491,
+      "r2": -0.0012940588795120611,
+      "pearson_corr": 0.030350122650812123,
+      "spearman_corr": 0.008444504759429157,
+      "directional_accuracy": 0.4929881337648328,
+      "top20_directional_accuracy": 0.5067385444743935,
+      "sign_strategy_mean": 0.00010676163908259403,
+      "sign_strategy_sharpe": 2.7789044362375437
+    }
+  },
+  "ts_range": {
+    "train": {
+      "min": "2023-01-08 00:00:00+00:00",
+      "max": "2024-12-28 18:00:00+00:00"
+    },
+    "val": {
+      "min": "2024-12-28 19:00:00+00:00",
+      "max": "2025-06-01 05:00:00+00:00"
+    },
+    "test": {
+      "min": "2025-06-01 06:00:00+00:00",
+      "max": "2025-11-02 17:00:00+00:00"
+    }
+  }
+}

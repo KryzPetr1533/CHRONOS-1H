@@ -1,0 +1,39 @@
+{
+  "csv": "outputs/datasets/btcusdt_patchtst.csv",
+  "n_rows": 24714,
+  "columns": [
+    "unique_id",
+    "ds",
+    "y",
+    "premium_chg",
+    "fundingRate",
+    "vol_chg",
+    "trades_chg",
+    "taker_buy_share",
+    "rv_24",
+    "hour_sin",
+    "hour_cos",
+    "dow_sin",
+    "dow_cos",
+    "fundingRate_missing",
+    "taker_buy_share_missing"
+  ],
+  "hist_exog": [
+    "premium_chg",
+    "fundingRate",
+    "vol_chg",
+    "trades_chg",
+    "taker_buy_share",
+    "rv_24",
+    "fundingRate_missing",
+    "taker_buy_share_missing"
+  ],
+  "futr_exog": [
+    "hour_sin",
+    "hour_cos",
+    "dow_sin",
+    "dow_cos"
+  ],
+  "ds_min": "2023-01-08 00:00:00",
+  "ds_max": "2025-11-02 17:00:00"
+}

@@ -1,0 +1,74 @@
+{
+  "data_csv": "outputs/datasets/chronos2_panel.csv",
+  "prediction_length": 1,
+  "n_items": 1,
+  "n_rows": 24714,
+  "n_unique_timestamps": 24714,
+  "train_cutoff": "2024-12-28 18:00:00",
+  "val_cutoff": "2025-06-01 05:00:00",
+  "n_test_backtest_windows": 256,
+  "model_results": {
+    "Chronos2SmallZeroShot": {
+      "baseline": {
+        "rmse": 0.008462727733473108,
+        "mae": 0.005135380158747035,
+        "nrmse": 1.6639632761827505,
+        "mae_over_std": 1.0097316447501616,
+        "r2": -1.7687737844848326,
+        "pearson_corr": -0.10934881131052289,
+        "spearman_corr": -0.09504248683909361,
+        "directional_accuracy": 0.4609375,
+        "top20_directional_accuracy": 0.46153846153846156,
+        "sign_strategy_mean": -0.0006992421573834247,
+        "sign_strategy_sharpe": -12.982740505536347
+      },
+      "model": {
+        "rmse": 0.005305903852435163,
+        "mae": 0.0032191348103678776,
+        "nrmse": 1.0432604516493567,
+        "mae_over_std": 0.6329545595974587,
+        "r2": -0.08839236997561972,
+        "pearson_corr": -0.1606178968111806,
+        "spearman_corr": 0.0964172293430991,
+        "directional_accuracy": 0.52734375,
+        "top20_directional_accuracy": 0.5769230769230769,
+        "sign_strategy_mean": 4.825259211729627e-05,
+        "sign_strategy_sharpe": 0.8874430454580625
+      },
+      "n_predictions": 256
+    },
+    "Chronos2SmallFineTuned": {
+      "baseline": {
+        "rmse": 0.008462727733473108,
+        "mae": 0.005135380158747035,
+        "nrmse": 1.6639632761827505,
+        "mae_over_std": 1.0097316447501616,
+        "r2": -1.7687737844848326,
+        "pearson_corr": -0.10934881131052289,
+        "spearman_corr": -0.09504248683909361,
+        "directional_accuracy": 0.4609375,
+        "top20_directional_accuracy": 0.46153846153846156,
+        "sign_strategy_mean": -0.0006992421573834247,
+        "sign_strategy_sharpe": -12.982740505536347
+      },
+      "model": {
+        "rmse": 0.005309759891087493,
+        "mae": 0.0032206307408646864,
+        "nrmse": 1.0440186358792047,
+        "mae_over_std": 0.6332486932962856,
+        "r2": -0.08997491206307551,
+        "pearson_corr": -0.16031305993338876,
+        "spearman_corr": 0.09037894827191575,
+        "directional_accuracy": 0.51171875,
+        "top20_directional_accuracy": 0.5769230769230769,
+        "sign_strategy_mean": -0.00029267866467441814,
+        "sign_strategy_sharpe": -5.391514221078059
+      },
+      "n_predictions": 256
+    }
+  },
+  "model_names": [
+    "Chronos2SmallZeroShot",
+    "Chronos2SmallFineTuned"
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "data_csv": "outputs/datasets/btcusdt_core_mean_small.csv",
+  "best_model": {
+    "model_kind": "ar_only",
+    "order": [
+      2,
+      0,
+      1
+    ],
+    "trend": "n",
+    "exog_cols": []
+  },
+  "split": {
+    "train_frac": 0.7,
+    "val_frac": 0.15,
+    "test_frac": 0.15
+  },
+  "n_rows": {
+    "train": 17299,
+    "val": 3707,
+    "test": 3708
+  },
+  "ts_range": {
+    "train": {
+      "min": "2023-01-08 00:00:00+00:00",
+      "max": "2024-12-28 18:00:00+00:00"
+    },
+    "val": {
+      "min": "2024-12-28 19:00:00+00:00",
+      "max": "2025-06-01 05:00:00+00:00"
+    },
+    "test": {
+      "min": "2025-06-01 06:00:00+00:00",
+      "max": "2025-11-02 17:00:00+00:00"
+    }
+  },
+  "baseline": {
+    "val": {
+      "rmse": 0.007921589274566364,
+      "mae": 0.005248740829512103,
+      "nrmse": 1.429630964624655,
+      "mae_over_std": 0.9472546676021603,
+      "r2": -1.0438446950136209,
+      "pearson_corr": -0.021936040387626747,
+      "spearman_corr": -0.043077431942591206,
+      "directional_accuracy": 0.4796221322537112,
+      "top20_directional_accuracy": 0.46495956873315364,
+      "sign_strategy_mean": -6.591747480239719e-05,
+      "sign_strategy_sharpe": -1.1135096923424757
+    },
+    "test": {
+      "rmse": 0.0050836777017741,
+      "mae": 0.003498663446095066,
+      "nrmse": 1.413177742565331,
+      "mae_over_std": 0.9725701747423978,
+      "r2": -0.9970713320820452,
+      "pearson_corr": 0.0015369889020487824,
+      "spearman_corr": -0.002713137245280207,
+      "directional_accuracy": 0.5078209277238404,
+      "top20_directional_accuracy": 0.5094339622641509,
+      "sign_strategy_mean": 8.343284183908935e-05,
+      "sign_strategy_sharpe": 2.171305293069562
+    }
+  },
+  "model": {
+    "val": {
+      "rmse": 0.0055410552267079185,
+      "mae": 0.0035669500363908297,
+      "nrmse": 1.0000094493955656,
+      "mae_over_std": 0.643737265912782,
+      "r2": -1.8898880421946984e-05,
+      "pearson_corr": 0.0027692158402979664,
+      "spearman_corr": 0.0033335054711936744,
+      "directional_accuracy": 0.5002698327037237,
+      "top20_directional_accuracy": 0.48921832884097033,
+      "sign_strategy_mean": -2.4970531425453064e-05,
+      "sign_strategy_sharpe": -0.42178532293878485
+    },
+    "test": {
+      "rmse": 0.0035973708297260716,
+      "mae": 0.002431027585917192,
+      "nrmse": 1.0000091836169207,
+      "mae_over_std": 0.67578518496198,
+      "r2": -1.8367318180390058e-05,
+      "pearson_corr": -0.0015124498622977219,
+      "spearman_corr": -0.011319759010363417,
+      "directional_accuracy": 0.4967637540453074,
+      "top20_directional_accuracy": 0.49326145552560646,
+      "sign_strategy_mean": -3.8747726232386e-05,
+      "sign_strategy_sharpe": -1.0081808312596103
+    }
+  }
+}

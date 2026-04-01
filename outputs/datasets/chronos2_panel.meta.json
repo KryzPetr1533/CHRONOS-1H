@@ -1,0 +1,27 @@
+{
+  "csv": "outputs/datasets/chronos2_panel.csv",
+  "n_rows": 24714,
+  "n_items": 1,
+  "items": [
+    "BTCUSDT"
+  ],
+  "known_covariates_names": [
+    "hour_sin",
+    "hour_cos",
+    "dow_sin",
+    "dow_cos"
+  ],
+  "past_covariates": [
+    "log_ret_1h",
+    "premium_chg",
+    "fundingRate",
+    "vol_chg",
+    "trades_chg",
+    "taker_buy_share",
+    "rv_24",
+    "fundingRate_missing",
+    "taker_buy_share_missing"
+  ],
+  "timestamp_min": "2023-01-08 00:00:00",
+  "timestamp_max": "2025-11-02 17:00:00"
+}

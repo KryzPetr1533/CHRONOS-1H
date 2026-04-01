@@ -1,0 +1,15 @@
+data_csv: outputs/datasets/btcusdt_core_tabular.csv
+output_dir: outputs/models/catboost_core
+model_name: catboost
+split:
+  train_frac: 0.7
+  val_frac: 0.15
+  test_frac: 0.15
+cv_splits: 4
+n_jobs: -1
+baseline_col: log_ret_1h
+param_grid:
+  depth: [4, 6]
+  learning_rate: [0.03, 0.05]
+  n_estimators: [300, 600]
+  l2_leaf_reg: [3, 10]

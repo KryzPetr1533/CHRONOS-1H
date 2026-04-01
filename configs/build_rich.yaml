@@ -1,0 +1,6 @@
+input_csv: data/btcusdt_1h_merged.csv
+output_csv: outputs/datasets/btcusdt_rich_tabular.csv
+profile: rich
+lag_hours: [1, 2, 3, 6, 12, 24, 48]
+rolling_windows: [6, 24, 72]
+min_history_hours: 72
