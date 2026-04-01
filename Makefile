@@ -46,6 +46,7 @@ DOCKER_RUN_BASE = docker run --rm -it --name $(CONTAINER) \
 	$(DOCKER_SHM_FLAG) \
 	-e NVIDIA_VISIBLE_DEVICES=all \
 	-e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+	-e PYTHONPATH="$(WORKDIR_ABS)" \
 	-p $(PORT):8888 \
 	-v "$(WORKDIR_ABS)":"$(WORKDIR_ABS)" \
 	-w "$(WORKDIR_ABS)" \
