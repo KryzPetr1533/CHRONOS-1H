@@ -1,0 +1,22 @@
+{
+  "name": "btcusdt_core_vol_small",
+  "n_rows": 24714,
+  "columns": [
+    "ts",
+    "target_log_ret_1h",
+    "log_ret_1h",
+    "abs_ret",
+    "rv_6",
+    "rv_24",
+    "rv_72",
+    "volume",
+    "num_trades",
+    "fundingRate",
+    "hour_sin",
+    "hour_cos",
+    "dow_sin",
+    "dow_cos"
+  ],
+  "ts_min": "2023-01-08 00:00:00+00:00",
+  "ts_max": "2025-11-02 17:00:00+00:00"
+}

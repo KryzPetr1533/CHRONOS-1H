@@ -1,0 +1,68 @@
+{
+  "data_csv": "outputs/datasets/btcusdt_timexer.csv",
+  "model": "TimeXer",
+  "encoder_length": 168,
+  "prediction_length": 1,
+  "n_rows": {
+    "total": 24714,
+    "train": 17299,
+    "val": 3707,
+    "test": 3708
+  },
+  "baseline": {
+    "val": {
+      "rmse": 0.007921589266185641,
+      "mae": 0.005248740825902981,
+      "nrmse": 1.429630965298082,
+      "mae_over_std": 0.9472546683991736,
+      "r2": -1.0438446969391268,
+      "pearson_corr": -0.021936039787791534,
+      "spearman_corr": -0.043077431942591206,
+      "directional_accuracy": 0.4796221322537112,
+      "top20_directional_accuracy": 0.46495956873315364,
+      "sign_strategy_mean": -6.591747573098203e-05,
+      "sign_strategy_sharpe": -1.1135097097357125
+    },
+    "test": {
+      "rmse": 0.005083677697922382,
+      "mae": 0.00349866344491824,
+      "nrmse": 1.413177744118093,
+      "mae_over_std": 0.9725701762207749,
+      "r2": -0.9970713364707025,
+      "pearson_corr": 0.0015369885615470038,
+      "spearman_corr": -0.002713137245280207,
+      "directional_accuracy": 0.5078209277238404,
+      "top20_directional_accuracy": 0.5094339622641509,
+      "sign_strategy_mean": 8.343284320915858e-05,
+      "sign_strategy_sharpe": 2.171305332779185
+    }
+  },
+  "timexer": {
+    "val": {
+      "rmse": 0.005560319310504976,
+      "mae": 0.003582446529273903,
+      "nrmse": 1.003486093021136,
+      "mae_over_std": 0.6465339615166297,
+      "r2": -0.006984338886823815,
+      "pearson_corr": -0.013207567414845888,
+      "spearman_corr": -0.008239941665557044,
+      "directional_accuracy": 0.5040474905558554,
+      "top20_directional_accuracy": 0.4946091644204852,
+      "sign_strategy_mean": 3.309842787826592e-05,
+      "sign_strategy_sharpe": 0.5590805489775006
+    },
+    "test": {
+      "rmse": 0.0036122069830549393,
+      "mae": 0.0024545800605576804,
+      "nrmse": 1.0041333890398692,
+      "mae_over_std": 0.682332381959183,
+      "r2": -0.008283862984693302,
+      "pearson_corr": -0.0118289574943461,
+      "spearman_corr": -0.03901135891116185,
+      "directional_accuracy": 0.4754584681769148,
+      "top20_directional_accuracy": 0.4838274932614555,
+      "sign_strategy_mean": -9.376955875801742e-05,
+      "sign_strategy_sharpe": -2.4404869050653186
+    }
+  }
+}

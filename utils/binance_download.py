@@ -130,7 +130,6 @@ class BinancePublic:
         limit: int = 1500,
     ) -> pd.DataFrame:
         """GET /fapi/v1/premiumIndexKlines"""
-        # Docs: :contentReference[oaicite:4]{index=4}
         url = f"{FAPI_BASE}/fapi/v1/premiumIndexKlines"
         end = end or datetime.now(timezone.utc)
         start_ms, end_ms = to_ms(start), to_ms(end)
@@ -197,7 +196,6 @@ class BinancePublic:
         USDⓈ-M taker buy/sell volume ratio & volumes (~30 days).
         Primary: GET /futures/data/takerlongshortRatio (buyVol, sellVol, buySellRatio).
         """
-        # Docs: :contentReference[oaicite:6]{index=6}
         url_usdm = f"{FAPI_BASE}/futures/data/takerlongshortRatio"
         params: Dict[str, Any] = {"symbol": symbol, "period": period, "limit": limit}
         if start: params["startTime"] = to_ms(start)
@@ -221,7 +219,6 @@ class BinancePublic:
         Global Long/Short Account Ratio (~30 days).
         GET /futures/data/globalLongShortAccountRatio
         """
-        # Docs: :contentReference[oaicite:7]{index=7}
         url = f"{FAPI_BASE}/futures/data/globalLongShortAccountRatio"
         params: Dict[str, Any] = {"symbol": symbol, "period": period, "limit": limit}
         if start: params["startTime"] = to_ms(start)

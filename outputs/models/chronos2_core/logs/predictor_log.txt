@@ -1,0 +1,695 @@
+Beginning AutoGluon training...
+AutoGluon will save models to '/home/devdem/CHRONOS-1H/outputs/models/chronos2_core'
+=================== System Info ===================
+AutoGluon Version:  1.5.0
+Python Version:     3.11.15
+Operating System:   Linux
+Platform Machine:   x86_64
+Platform Version:   #37~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 20 10:25:38 UTC 2
+CPU Count:          8
+Pytorch Version:    2.8.0+cu128
+CUDA Version:       12.8
+GPU Memory:         GPU 0: 3.63/3.63 GB
+Total GPU Memory:   Free: 3.63 GB, Allocated: 0.00 GB, Total: 3.63 GB
+GPU Count:          1
+Memory Avail:       8.24 GB / 15.46 GB (53.3%)
+Disk Space Avail:   748.90 GB / 884.53 GB (84.7%)
+===================================================
+
+Fitting with arguments:
+{'enable_ensemble': False,
+ 'eval_metric': RMSE,
+ 'freq': 'h',
+ 'hyperparameters': {'Chronos2': [{'ag_args': {'name_suffix': 'ZeroShot'},
+                                   'batch_size': 128,
+                                   'context_length': 2048,
+                                   'cross_learning': True,
+                                   'model_path': 'autogluon/chronos-2'},
+                                  {'ag_args': {'name_suffix': 'FineTuned'},
+                                   'batch_size': 128,
+                                   'context_length': 2048,
+                                   'cross_learning': True,
+                                   'eval_during_fine_tune': True,
+                                   'fine_tune': True,
+                                   'fine_tune_batch_size': 32,
+                                   'fine_tune_context_length': 2048,
+                                   'fine_tune_lr': 1e-05,
+                                   'fine_tune_mode': 'lora',
+                                   'fine_tune_steps': 1000,
+                                   'model_path': 'autogluon/chronos-2'}]},
+ 'known_covariates_names': ['hour_sin', 'hour_cos', 'dow_sin', 'dow_cos'],
+ 'num_val_windows': 1,
+ 'prediction_length': 1,
+ 'quantile_levels': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+ 'random_seed': 123,
+ 'refit_every_n_windows': 1,
+ 'refit_full': False,
+ 'skip_model_selection': False,
+ 'target': 'target',
+ 'verbosity': 2}
+
+Provided train_data has 17299 rows, 1 time series. Median time series length is 17299 (min=17299, max=17299). 
+
+Provided data contains following columns:
+	target: 'target'
+	known_covariates:
+		categorical:        []
+		continuous (float): ['hour_sin', 'hour_cos', 'dow_sin', 'dow_cos']
+	past_covariates:
+		categorical:        []
+		continuous (float): ['log_ret_1h', 'premium_chg', 'fundingRate', 'vol_chg', 'trades_chg', 'taker_buy_share', ...]
+
+AutoGluon will ignore following non-numeric/non-informative columns:
+	ignored covariates:      ['taker_buy_share_missing']
+
+To learn how to fix incorrectly inferred types, please see documentation for TimeSeriesPredictor.fit
+
+AutoGluon will gauge predictive performance using evaluation metric: 'RMSE'
+	This metric's sign has been flipped to adhere to being higher_is_better. The metric score can be multiplied by -1 to get the metric value.
+===================================================
+
+Starting training. Start time is 2026-04-01 11:37:34
+Models that will be trained: ['Chronos2ZeroShot', 'Chronos2FineTuned']
+Training timeseries model Chronos2ZeroShot. 
+	-0.0020       = Validation score (-RMSE)
+	10.62   s     = Training runtime
+	0.61    s     = Validation (prediction) runtime
+Training timeseries model Chronos2FineTuned. 
+	Warning: Exception caused Chronos2FineTuned to fail during training... Skipping this model.
+Traceback (most recent call last):
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/autogluon/timeseries/trainer/trainer.py", line 353, in _train_and_save
+    model.fit(
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/autogluon/timeseries/models/abstract/abstract_timeseries_model.py", line 529, in fit
+    self._fit(
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/autogluon/timeseries/models/multi_window/multi_window_model.py", line 141, in _fit
+    model.fit(
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/autogluon/timeseries/models/abstract/abstract_timeseries_model.py", line 529, in fit
+    self._fit(
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/autogluon/timeseries/models/chronos/chronos2.py", line 153, in _fit
+    self._fine_tune(train_data, val_data, time_limit=time_limit, verbosity=verbosity)
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/autogluon/timeseries/models/chronos/chronos2.py", line 365, in _fine_tune
+    self._model_pipeline = self._model_pipeline.fit(
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/pipeline.py", line 341, in fit
+    trainer.train()
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/transformers/trainer.py", line 2325, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/transformers/trainer.py", line 2674, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs, num_items_in_batch)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/transformers/trainer.py", line 4020, in training_step
+    loss = self.compute_loss(model, inputs, num_items_in_batch=num_items_in_batch)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/transformers/trainer.py", line 4110, in compute_loss
+    outputs = model(**inputs)
+              ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/peft/peft_model.py", line 881, in forward
+    return self.get_base_model()(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/model.py", line 697, in forward
+    encoder_outputs, loc_scale, patched_future_covariates_mask, num_context_patches = self.encode(
+                                                                                      ^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/model.py", line 610, in encode
+    encoder_outputs: Chronos2EncoderOutput = self.encoder(
+                                             ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/model.py", line 163, in forward
+    layer_outputs: Chronos2EncoderBlockOutput = layer_module(
+                                                ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/model.py", line 73, in forward
+    hidden_states = self.layer[2](hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/layers.py", line 137, in forward
+    forwarded_states = self.mlp(forwarded_states)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/layers.py", line 121, in forward
+    hidden_states = self.dropout(hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/dropout.py", line 70, in forward
+    return F.dropout(input, self.p, self.training, self.inplace)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/functional.py", line 1422, in dropout
+    _VF.dropout_(input, p, training) if inplace else _VF.dropout(input, p, training)
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 60.00 MiB. GPU 0 has a total capacity of 3.63 GiB of which 53.00 MiB is free. Process 174569 has 3.57 GiB memory in use. Of the allocated memory 3.31 GiB is allocated by PyTorch, and 198.91 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+Training complete. Models trained: ['Chronos2ZeroShot']
+Total runtime: 14.96 s
+Best model: Chronos2ZeroShot
+Best model score: -0.0020
+Beginning AutoGluon training...
+AutoGluon will save models to '/home/devdem/CHRONOS-1H/outputs/models/chronos2_core'
+=================== System Info ===================
+AutoGluon Version:  1.5.0
+Python Version:     3.11.15
+Operating System:   Linux
+Platform Machine:   x86_64
+Platform Version:   #37~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 20 10:25:38 UTC 2
+CPU Count:          8
+Pytorch Version:    2.8.0+cu128
+CUDA Version:       12.8
+GPU Memory:         GPU 0: 3.63/3.63 GB
+Total GPU Memory:   Free: 3.63 GB, Allocated: 0.00 GB, Total: 3.63 GB
+GPU Count:          1
+Memory Avail:       9.05 GB / 15.46 GB (58.5%)
+Disk Space Avail:   748.46 GB / 884.53 GB (84.6%)
+===================================================
+
+Fitting with arguments:
+{'enable_ensemble': False,
+ 'eval_metric': RMSE,
+ 'freq': 'h',
+ 'hyperparameters': {'Chronos2': [{'ag_args': {'name_suffix': 'ZeroShot'},
+                                   'batch_size': 128,
+                                   'context_length': 2048,
+                                   'cross_learning': True,
+                                   'model_path': 'autogluon/chronos-2'},
+                                  {'ag_args': {'name_suffix': 'FineTuned'},
+                                   'batch_size': 128,
+                                   'context_length': 2048,
+                                   'cross_learning': True,
+                                   'eval_during_fine_tune': True,
+                                   'fine_tune': True,
+                                   'fine_tune_batch_size': 32,
+                                   'fine_tune_context_length': 2048,
+                                   'fine_tune_lr': 1e-05,
+                                   'fine_tune_mode': 'lora',
+                                   'fine_tune_steps': 1000,
+                                   'model_path': 'autogluon/chronos-2'}]},
+ 'known_covariates_names': ['hour_sin', 'hour_cos', 'dow_sin', 'dow_cos'],
+ 'num_val_windows': 1,
+ 'prediction_length': 1,
+ 'quantile_levels': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+ 'random_seed': 123,
+ 'refit_every_n_windows': 1,
+ 'refit_full': False,
+ 'skip_model_selection': False,
+ 'target': 'target',
+ 'verbosity': 2}
+
+Provided train_data has 17299 rows, 1 time series. Median time series length is 17299 (min=17299, max=17299). 
+
+Provided data contains following columns:
+	target: 'target'
+	known_covariates:
+		categorical:        []
+		continuous (float): ['hour_sin', 'hour_cos', 'dow_sin', 'dow_cos']
+	past_covariates:
+		categorical:        []
+		continuous (float): ['log_ret_1h', 'premium_chg', 'fundingRate', 'vol_chg', 'trades_chg', 'taker_buy_share', ...]
+
+AutoGluon will ignore following non-numeric/non-informative columns:
+	ignored covariates:      ['taker_buy_share_missing']
+
+To learn how to fix incorrectly inferred types, please see documentation for TimeSeriesPredictor.fit
+
+AutoGluon will gauge predictive performance using evaluation metric: 'RMSE'
+	This metric's sign has been flipped to adhere to being higher_is_better. The metric score can be multiplied by -1 to get the metric value.
+===================================================
+
+Starting training. Start time is 2026-04-01 11:39:04
+Models that will be trained: ['Chronos2ZeroShot', 'Chronos2FineTuned']
+Training timeseries model Chronos2ZeroShot. 
+	-0.0020       = Validation score (-RMSE)
+	3.49    s     = Training runtime
+	0.60    s     = Validation (prediction) runtime
+Training timeseries model Chronos2FineTuned. 
+	Warning: Exception caused Chronos2FineTuned to fail during training... Skipping this model.
+Traceback (most recent call last):
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/autogluon/timeseries/trainer/trainer.py", line 353, in _train_and_save
+    model.fit(
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/autogluon/timeseries/models/abstract/abstract_timeseries_model.py", line 529, in fit
+    self._fit(
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/autogluon/timeseries/models/multi_window/multi_window_model.py", line 141, in _fit
+    model.fit(
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/autogluon/timeseries/models/abstract/abstract_timeseries_model.py", line 529, in fit
+    self._fit(
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/autogluon/timeseries/models/chronos/chronos2.py", line 153, in _fit
+    self._fine_tune(train_data, val_data, time_limit=time_limit, verbosity=verbosity)
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/autogluon/timeseries/models/chronos/chronos2.py", line 365, in _fine_tune
+    self._model_pipeline = self._model_pipeline.fit(
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/pipeline.py", line 341, in fit
+    trainer.train()
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/transformers/trainer.py", line 2325, in train
+    return inner_training_loop(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/transformers/trainer.py", line 2674, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs, num_items_in_batch)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/transformers/trainer.py", line 4020, in training_step
+    loss = self.compute_loss(model, inputs, num_items_in_batch=num_items_in_batch)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/transformers/trainer.py", line 4110, in compute_loss
+    outputs = model(**inputs)
+              ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/peft/peft_model.py", line 881, in forward
+    return self.get_base_model()(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/model.py", line 697, in forward
+    encoder_outputs, loc_scale, patched_future_covariates_mask, num_context_patches = self.encode(
+                                                                                      ^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/model.py", line 610, in encode
+    encoder_outputs: Chronos2EncoderOutput = self.encoder(
+                                             ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/model.py", line 163, in forward
+    layer_outputs: Chronos2EncoderBlockOutput = layer_module(
+                                                ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/model.py", line 73, in forward
+    hidden_states = self.layer[2](hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/layers.py", line 137, in forward
+    forwarded_states = self.mlp(forwarded_states)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/devdem/CHRONOS-1H/.local/lib/python3.11/site-packages/chronos/chronos2/layers.py", line 121, in forward
+    hidden_states = self.dropout(hidden_states)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/modules/dropout.py", line 70, in forward
+    return F.dropout(input, self.p, self.training, self.inplace)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/torch/nn/functional.py", line 1422, in dropout
+    _VF.dropout_(input, p, training) if inplace else _VF.dropout(input, p, training)
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 60.00 MiB. GPU 0 has a total capacity of 3.63 GiB of which 53.00 MiB is free. Process 175232 has 3.57 GiB memory in use. Of the allocated memory 3.31 GiB is allocated by PyTorch, and 198.91 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+Training complete. Models trained: ['Chronos2ZeroShot']
+Total runtime: 7.83 s
+Best model: Chronos2ZeroShot
+Best model score: -0.0020
+Beginning AutoGluon training...
+AutoGluon will save models to '/home/devdem/CHRONOS-1H/outputs/models/chronos2_core'
+=================== System Info ===================
+AutoGluon Version:  1.5.0
+Python Version:     3.11.15
+Operating System:   Linux
+Platform Machine:   x86_64
+Platform Version:   #37~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 20 10:25:38 UTC 2
+CPU Count:          8
+Pytorch Version:    2.8.0+cu128
+CUDA Version:       12.8
+GPU Memory:         GPU 0: 3.63/3.63 GB
+Total GPU Memory:   Free: 3.63 GB, Allocated: 0.00 GB, Total: 3.63 GB
+GPU Count:          1
+Memory Avail:       9.89 GB / 15.46 GB (64.0%)
+Disk Space Avail:   748.45 GB / 884.53 GB (84.6%)
+===================================================
+
+Fitting with arguments:
+{'enable_ensemble': False,
+ 'eval_metric': RMSE,
+ 'freq': 'h',
+ 'hyperparameters': {'Chronos2': [{'ag_args': {'name_suffix': 'SmallZeroShot'},
+                                   'batch_size': 16,
+                                   'context_length': 512,
+                                   'cross_learning': True,
+                                   'model_path': 'autogluon/chronos-2-small'},
+                                  {'ag_args': {'name_suffix': 'SmallFineTuned'},
+                                   'batch_size': 16,
+                                   'context_length': 512,
+                                   'cross_learning': True,
+                                   'eval_during_fine_tune': True,
+                                   'fine_tune': True,
+                                   'fine_tune_batch_size': 4,
+                                   'fine_tune_context_length': 512,
+                                   'fine_tune_lr': 1e-05,
+                                   'fine_tune_mode': 'lora',
+                                   'fine_tune_steps': 300,
+                                   'model_path': 'autogluon/chronos-2-small'}]},
+ 'known_covariates_names': ['hour_sin', 'hour_cos', 'dow_sin', 'dow_cos'],
+ 'num_val_windows': 1,
+ 'prediction_length': 1,
+ 'quantile_levels': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+ 'random_seed': 123,
+ 'refit_every_n_windows': 1,
+ 'refit_full': False,
+ 'skip_model_selection': False,
+ 'target': 'target',
+ 'verbosity': 2}
+
+Provided train_data has 17299 rows, 1 time series. Median time series length is 17299 (min=17299, max=17299). 
+
+Provided data contains following columns:
+	target: 'target'
+	known_covariates:
+		categorical:        []
+		continuous (float): ['hour_sin', 'hour_cos', 'dow_sin', 'dow_cos']
+	past_covariates:
+		categorical:        []
+		continuous (float): ['log_ret_1h', 'premium_chg', 'fundingRate', 'vol_chg', 'trades_chg', 'taker_buy_share', ...]
+
+AutoGluon will ignore following non-numeric/non-informative columns:
+	ignored covariates:      ['taker_buy_share_missing']
+
+To learn how to fix incorrectly inferred types, please see documentation for TimeSeriesPredictor.fit
+
+AutoGluon will gauge predictive performance using evaluation metric: 'RMSE'
+	This metric's sign has been flipped to adhere to being higher_is_better. The metric score can be multiplied by -1 to get the metric value.
+===================================================
+
+Starting training. Start time is 2026-04-01 11:41:21
+Models that will be trained: ['Chronos2SmallZeroShot', 'Chronos2SmallFineTuned']
+Training timeseries model Chronos2SmallZeroShot. 
+	-0.0020       = Validation score (-RMSE)
+	6.18    s     = Training runtime
+	0.28    s     = Validation (prediction) runtime
+Training timeseries model Chronos2SmallFineTuned. 
+	-0.0020       = Validation score (-RMSE)
+	27.61   s     = Training runtime
+	0.04    s     = Validation (prediction) runtime
+Training complete. Models trained: ['Chronos2SmallZeroShot', 'Chronos2SmallFineTuned']
+Total runtime: 34.12 s
+Best model: Chronos2SmallFineTuned
+Best model score: -0.0020
+Beginning AutoGluon training...
+AutoGluon will save models to '/home/devdem/CHRONOS-1H/outputs/models/chronos2_core'
+=================== System Info ===================
+AutoGluon Version:  1.5.0
+Python Version:     3.11.15
+Operating System:   Linux
+Platform Machine:   x86_64
+Platform Version:   #37~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 20 10:25:38 UTC 2
+CPU Count:          8
+Pytorch Version:    2.8.0+cu128
+CUDA Version:       12.8
+GPU Memory:         GPU 0: 3.63/3.63 GB
+Total GPU Memory:   Free: 3.63 GB, Allocated: 0.00 GB, Total: 3.63 GB
+GPU Count:          1
+Memory Avail:       9.80 GB / 15.46 GB (63.4%)
+Disk Space Avail:   748.35 GB / 884.53 GB (84.6%)
+===================================================
+
+Fitting with arguments:
+{'enable_ensemble': False,
+ 'eval_metric': RMSE,
+ 'freq': 'h',
+ 'hyperparameters': {'Chronos2': [{'ag_args': {'name_suffix': 'SmallZeroShot'},
+                                   'batch_size': 64,
+                                   'context_length': 512,
+                                   'cross_learning': True,
+                                   'model_path': 'autogluon/chronos-2-small'},
+                                  {'ag_args': {'name_suffix': 'SmallFineTuned'},
+                                   'batch_size': 64,
+                                   'context_length': 512,
+                                   'cross_learning': True,
+                                   'eval_during_fine_tune': True,
+                                   'fine_tune': True,
+                                   'fine_tune_batch_size': 16,
+                                   'fine_tune_context_length': 512,
+                                   'fine_tune_eval_max_items': 64,
+                                   'fine_tune_lr': 1e-05,
+                                   'fine_tune_mode': 'lora',
+                                   'fine_tune_steps': 500,
+                                   'model_path': 'autogluon/chronos-2-small'}]},
+ 'known_covariates_names': ['hour_sin', 'hour_cos', 'dow_sin', 'dow_cos'],
+ 'num_val_windows': 1,
+ 'prediction_length': 1,
+ 'quantile_levels': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+ 'random_seed': 123,
+ 'refit_every_n_windows': 1,
+ 'refit_full': False,
+ 'skip_model_selection': False,
+ 'target': 'target',
+ 'verbosity': 2}
+
+Provided train_data has 17299 rows, 1 time series. Median time series length is 17299 (min=17299, max=17299). 
+
+Provided data contains following columns:
+	target: 'target'
+	known_covariates:
+		categorical:        []
+		continuous (float): ['hour_sin', 'hour_cos', 'dow_sin', 'dow_cos']
+	past_covariates:
+		categorical:        []
+		continuous (float): ['log_ret_1h', 'premium_chg', 'fundingRate', 'vol_chg', 'trades_chg', 'taker_buy_share', ...]
+
+AutoGluon will ignore following non-numeric/non-informative columns:
+	ignored covariates:      ['taker_buy_share_missing']
+
+To learn how to fix incorrectly inferred types, please see documentation for TimeSeriesPredictor.fit
+
+AutoGluon will gauge predictive performance using evaluation metric: 'RMSE'
+	This metric's sign has been flipped to adhere to being higher_is_better. The metric score can be multiplied by -1 to get the metric value.
+===================================================
+
+Starting training. Start time is 2026-04-01 11:45:09
+Models that will be trained: ['Chronos2SmallZeroShot', 'Chronos2SmallFineTuned']
+Training timeseries model Chronos2SmallZeroShot. 
+	-0.0020       = Validation score (-RMSE)
+	2.90    s     = Training runtime
+	0.28    s     = Validation (prediction) runtime
+Training timeseries model Chronos2SmallFineTuned. 
+Beginning AutoGluon training...
+AutoGluon will save models to '/home/devdem/CHRONOS-1H/outputs/models/chronos2_core'
+=================== System Info ===================
+AutoGluon Version:  1.5.0
+Python Version:     3.11.15
+Operating System:   Linux
+Platform Machine:   x86_64
+Platform Version:   #37~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 20 10:25:38 UTC 2
+CPU Count:          8
+Pytorch Version:    2.8.0+cu128
+CUDA Version:       12.8
+GPU Memory:         GPU 0: 3.63/3.63 GB
+Total GPU Memory:   Free: 3.63 GB, Allocated: 0.00 GB, Total: 3.63 GB
+GPU Count:          1
+Memory Avail:       9.68 GB / 15.46 GB (62.6%)
+Disk Space Avail:   748.35 GB / 884.53 GB (84.6%)
+===================================================
+
+Fitting with arguments:
+{'enable_ensemble': False,
+ 'eval_metric': RMSE,
+ 'freq': 'h',
+ 'hyperparameters': {'Chronos2': [{'ag_args': {'name_suffix': 'SmallZeroShot'},
+                                   'batch_size': 128,
+                                   'context_length': 512,
+                                   'cross_learning': True,
+                                   'model_path': 'autogluon/chronos-2-small'},
+                                  {'ag_args': {'name_suffix': 'SmallFineTuned'},
+                                   'batch_size': 128,
+                                   'context_length': 512,
+                                   'cross_learning': True,
+                                   'eval_during_fine_tune': True,
+                                   'fine_tune': True,
+                                   'fine_tune_batch_size': 32,
+                                   'fine_tune_context_length': 512,
+                                   'fine_tune_eval_max_items': 64,
+                                   'fine_tune_lr': 1e-05,
+                                   'fine_tune_mode': 'lora',
+                                   'fine_tune_steps': 500,
+                                   'model_path': 'autogluon/chronos-2-small'}]},
+ 'known_covariates_names': ['hour_sin', 'hour_cos', 'dow_sin', 'dow_cos'],
+ 'num_val_windows': 1,
+ 'prediction_length': 1,
+ 'quantile_levels': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+ 'random_seed': 123,
+ 'refit_every_n_windows': 1,
+ 'refit_full': False,
+ 'skip_model_selection': False,
+ 'target': 'target',
+ 'verbosity': 2}
+
+Provided train_data has 17299 rows, 1 time series. Median time series length is 17299 (min=17299, max=17299). 
+
+Provided data contains following columns:
+	target: 'target'
+	known_covariates:
+		categorical:        []
+		continuous (float): ['hour_sin', 'hour_cos', 'dow_sin', 'dow_cos']
+	past_covariates:
+		categorical:        []
+		continuous (float): ['log_ret_1h', 'premium_chg', 'fundingRate', 'vol_chg', 'trades_chg', 'taker_buy_share', ...]
+
+AutoGluon will ignore following non-numeric/non-informative columns:
+	ignored covariates:      ['taker_buy_share_missing']
+
+To learn how to fix incorrectly inferred types, please see documentation for TimeSeriesPredictor.fit
+
+AutoGluon will gauge predictive performance using evaluation metric: 'RMSE'
+	This metric's sign has been flipped to adhere to being higher_is_better. The metric score can be multiplied by -1 to get the metric value.
+===================================================
+
+Starting training. Start time is 2026-04-01 11:46:03
+Models that will be trained: ['Chronos2SmallZeroShot', 'Chronos2SmallFineTuned']
+Training timeseries model Chronos2SmallZeroShot. 
+	-0.0020       = Validation score (-RMSE)
+	2.88    s     = Training runtime
+	0.28    s     = Validation (prediction) runtime
+Training timeseries model Chronos2SmallFineTuned. 
+	-0.0019       = Validation score (-RMSE)
+	84.76   s     = Training runtime
+	0.04    s     = Validation (prediction) runtime
+Training complete. Models trained: ['Chronos2SmallZeroShot', 'Chronos2SmallFineTuned']
+Total runtime: 87.96 s
+Best model: Chronos2SmallFineTuned
+Best model score: -0.0019
+Beginning AutoGluon training...
+AutoGluon will save models to '/home/devdem/CHRONOS-1H/outputs/models/chronos2_core'
+=================== System Info ===================
+AutoGluon Version:  1.5.0
+Python Version:     3.11.15
+Operating System:   Linux
+Platform Machine:   x86_64
+Platform Version:   #37~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 20 10:25:38 UTC 2
+CPU Count:          8
+Pytorch Version:    2.8.0+cu128
+CUDA Version:       12.8
+GPU Memory:         GPU 0: 3.63/3.63 GB
+Total GPU Memory:   Free: 3.63 GB, Allocated: 0.00 GB, Total: 3.63 GB
+GPU Count:          1
+Memory Avail:       9.16 GB / 15.46 GB (59.2%)
+Disk Space Avail:   748.34 GB / 884.53 GB (84.6%)
+===================================================
+
+Fitting with arguments:
+{'enable_ensemble': False,
+ 'eval_metric': RMSE,
+ 'freq': 'h',
+ 'hyperparameters': {'Chronos2': [{'ag_args': {'name_suffix': 'SmallZeroShot'},
+                                   'batch_size': 128,
+                                   'context_length': 512,
+                                   'cross_learning': True,
+                                   'model_path': 'autogluon/chronos-2-small'},
+                                  {'ag_args': {'name_suffix': 'SmallFineTuned'},
+                                   'batch_size': 128,
+                                   'context_length': 512,
+                                   'cross_learning': True,
+                                   'eval_during_fine_tune': True,
+                                   'fine_tune': True,
+                                   'fine_tune_batch_size': 32,
+                                   'fine_tune_context_length': 512,
+                                   'fine_tune_eval_max_items': 64,
+                                   'fine_tune_lr': 1e-05,
+                                   'fine_tune_mode': 'lora',
+                                   'fine_tune_steps': 500,
+                                   'model_path': 'autogluon/chronos-2-small'}]},
+ 'known_covariates_names': ['hour_sin', 'hour_cos', 'dow_sin', 'dow_cos'],
+ 'num_val_windows': 1,
+ 'prediction_length': 1,
+ 'quantile_levels': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+ 'random_seed': 123,
+ 'refit_every_n_windows': 1,
+ 'refit_full': False,
+ 'skip_model_selection': False,
+ 'target': 'target',
+ 'verbosity': 2}
+
+Provided train_data has 17299 rows, 1 time series. Median time series length is 17299 (min=17299, max=17299). 
+
+Provided data contains following columns:
+	target: 'target'
+	known_covariates:
+		categorical:        []
+		continuous (float): ['hour_sin', 'hour_cos', 'dow_sin', 'dow_cos']
+	past_covariates:
+		categorical:        []
+		continuous (float): ['log_ret_1h', 'premium_chg', 'fundingRate', 'vol_chg', 'trades_chg', 'taker_buy_share', ...]
+
+AutoGluon will ignore following non-numeric/non-informative columns:
+	ignored covariates:      ['taker_buy_share_missing']
+
+To learn how to fix incorrectly inferred types, please see documentation for TimeSeriesPredictor.fit
+
+AutoGluon will gauge predictive performance using evaluation metric: 'RMSE'
+	This metric's sign has been flipped to adhere to being higher_is_better. The metric score can be multiplied by -1 to get the metric value.
+===================================================
+
+Starting training. Start time is 2026-04-01 12:41:37
+Models that will be trained: ['Chronos2SmallZeroShot', 'Chronos2SmallFineTuned']
+Training timeseries model Chronos2SmallZeroShot. 
+	-0.0020       = Validation score (-RMSE)
+	2.86    s     = Training runtime
+	0.28    s     = Validation (prediction) runtime
+Training timeseries model Chronos2SmallFineTuned. 
+	-0.0019       = Validation score (-RMSE)
+	83.19   s     = Training runtime
+	0.04    s     = Validation (prediction) runtime
+Training complete. Models trained: ['Chronos2SmallZeroShot', 'Chronos2SmallFineTuned']
+Total runtime: 86.38 s
+Best model: Chronos2SmallFineTuned
+Best model score: -0.0019
+Additional data provided, testing on additional data. Resulting leaderboard will be sorted according to test score (`score_test`).
