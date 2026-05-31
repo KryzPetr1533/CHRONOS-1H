@@ -1,0 +1,6 @@
+# @package _global_
+label:
+  target_family: return_token
+  return_col: log_ret_1h
+  horizon: 1
+  n_tokens: 5

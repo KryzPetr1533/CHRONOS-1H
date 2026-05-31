@@ -1,0 +1,6 @@
+# @package _global_
+label:
+  target_family: vol_regime
+  return_col: log_ret_1h
+  horizon: 1
+  vol_window: 6

@@ -1,0 +1,6 @@
+# @package _global_
+data_csv: outputs/datasets/btcusdt_rich_tabular.csv
+ts_col: ts
+drop_cols:
+  - ts
+  - target_log_ret_1h

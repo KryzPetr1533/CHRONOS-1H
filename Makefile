@@ -55,7 +55,8 @@ DOCKER_RUN_BASE = docker run --rm -it --name $(CONTAINER) \
 	-e TZ=UTC
 
 # ------- Targets -------
-.PHONY: help build rebuild bash start exec attach stop rm logs jupyter jupyter-secure prune cuda-check nvidia-smi
+.PHONY: help build rebuild bash start exec attach stop rm logs jupyter jupyter-secure prune cuda-check nvidia-smi \
+        build-clf-dataset train-clf train-clf-sweep
 
 help:
 	@echo "Targets:"
@@ -142,3 +143,16 @@ cuda-check:
 prune:
 	-docker image prune -f
 	-docker volume prune -f
+
+# ------- Classification pipeline -------
+# Build the feature matrix + sanity-check + label preview (runs in Docker)
+build-clf-dataset:
+	$(DOCKER_RUN_BASE) $(IMAGE) sh -c "cd $(WORKDIR_ABS) && python scripts/build_clf_dataset.py"
+
+# Train single run (default: vol_regime + catboost)
+train-clf:
+	$(DOCKER_RUN_BASE) $(IMAGE) sh -c "cd $(WORKDIR_ABS) && PYTHONPATH=$(WORKDIR_ABS) python scripts/train_classifier.py"
+
+# Multirun sweep over all label families and models
+train-clf-sweep:
+	$(DOCKER_RUN_BASE) $(IMAGE) sh -c "cd $(WORKDIR_ABS) && PYTHONPATH=$(WORKDIR_ABS) python scripts/train_classifier.py -m label=direction,large_move,vol_regime,horizon_dir,return_token model=logreg,catboost,lightgbm"

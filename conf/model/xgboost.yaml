@@ -1,0 +1,6 @@
+# @package _global_
+model_name: xgboost
+param_grid:
+  max_depth: [3, 5]
+  learning_rate: [0.03, 0.05]
+  n_estimators: [300, 500]

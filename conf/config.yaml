@@ -1,0 +1,12 @@
+defaults:
+  - data: btcusdt_core
+  - label: vol_regime
+  - model: catboost
+  - split: default
+  - _self_
+
+seed: 42
+
+output_base: outputs/models/clf
+abstention_threshold: 0.65
+top_k_pct: 0.20

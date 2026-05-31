@@ -1,0 +1,9 @@
+# @package _global_
+# btcusdt_clf_core.csv is built by scripts/build_clf_dataset.py
+# (same features as btcusdt_core_tabular.csv — kept for compatibility)
+data_csv: outputs/datasets/btcusdt_clf_core.csv
+ts_col: ts
+# Columns to drop from features (ts + regression target — not used in classification)
+drop_cols:
+  - ts
+  - target_log_ret_1h

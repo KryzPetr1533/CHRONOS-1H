@@ -1,0 +1,4 @@
+# @package _global_
+model_name: logreg
+param_grid:
+  model__C: [0.01, 0.1, 1.0, 10.0]
