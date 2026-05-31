@@ -56,7 +56,8 @@ DOCKER_RUN_BASE = docker run --rm -it --name $(CONTAINER) \
 
 # ------- Targets -------
 .PHONY: help build rebuild bash start exec attach stop rm logs jupyter jupyter-secure prune cuda-check nvidia-smi \
-        build-clf-dataset train-clf train-clf-sweep
+        build-clf-dataset train-clf train-clf-sweep \
+        mlflow-up mlflow-down train-final predict-prd token-transformer
 
 help:
 	@echo "Targets:"
@@ -156,3 +157,25 @@ train-clf:
 # Multirun sweep over all label families and models
 train-clf-sweep:
 	$(DOCKER_RUN_BASE) $(IMAGE) sh -c "cd $(WORKDIR_ABS) && PYTHONPATH=$(WORKDIR_ABS) python scripts/train_classifier.py -m label=direction,large_move,vol_regime,horizon_dir,return_token model=logreg,catboost,lightgbm"
+
+# ------- MLflow stack -------
+mlflow-up:
+	cd mlflow && docker compose up -d
+
+mlflow-down:
+	cd mlflow && docker compose down
+
+# ------- MLflow-integrated training (T2-P2 bonus) -------
+# Train final model and promote to PRD (requires mlflow-up)
+train-final:
+	$(DOCKER_RUN_BASE) --network mlflow_internal $(IMAGE) sh -c \
+	  "cd $(WORKDIR_ABS) && PYTHONPATH=$(WORKDIR_ABS) python scripts/train_mlflow.py experiment=final mlflow.promote_to_prd=true mlflow.tracking_uri=http://chronos_mlflow:5000"
+
+# Load PRD model and predict (requires mlflow-up + trained PRD)
+predict-prd:
+	$(DOCKER_RUN_BASE) --network mlflow_internal $(IMAGE) sh -c \
+	  "cd $(WORKDIR_ABS) && PYTHONPATH=$(WORKDIR_ABS) python scripts/predict_prd.py mlflow.tracking_uri=http://chronos_mlflow:5000"
+
+# Train token transformer (no MLflow required)
+token-transformer:
+	$(DOCKER_RUN_BASE) $(IMAGE) sh -c "cd $(WORKDIR_ABS) && PYTHONPATH=$(WORKDIR_ABS) python scripts/train_token_transformer.py"

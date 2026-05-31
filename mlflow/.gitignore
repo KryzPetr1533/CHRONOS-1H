@@ -1,0 +1,4 @@
+data/minio_data/*
+!data/minio_data/.gitkeep
+data/mlflow/*
+!data/mlflow/.gitkeep

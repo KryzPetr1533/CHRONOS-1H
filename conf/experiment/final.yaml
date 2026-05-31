@@ -1,0 +1,17 @@
+# @package _global_
+# The final/official experiment config — run this to produce the PRD model
+# Override: python scripts/train_mlflow.py experiment=final mlflow.promote_to_prd=true
+experiment:
+  name: final_vol_regime_catboost
+
+# Pin the chosen configuration
+label:
+  target_family: vol_regime
+  vol_window: 6
+
+model_name: catboost
+param_grid:
+  depth: [4, 6]
+  learning_rate: [0.03, 0.05]
+  n_estimators: [300, 500]
+  l2_leaf_reg: [3, 10]

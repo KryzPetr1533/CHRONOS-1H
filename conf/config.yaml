@@ -3,6 +3,7 @@ defaults:
   - label: vol_regime
   - model: catboost
   - split: default
+  - mlflow: local
   - _self_
 
 seed: 42
@@ -10,3 +11,6 @@ seed: 42
 output_base: outputs/models/clf
 abstention_threshold: 0.65
 top_k_pct: 0.20
+
+experiment:
+  name: default_run

@@ -36,7 +36,7 @@ import logging
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -96,8 +96,25 @@ class ClassifierRunner:
             **kwargs,
         ))
 
-    def run(self) -> dict[str, Any]:
-        """Train, evaluate, save artifacts. Returns the full result dict."""
+    def run(
+        self,
+        mlflow_experiment: Optional[str] = None,
+        register_as: Optional[str] = None,
+        promote_to_prd: bool = False,
+    ) -> dict[str, Any]:
+        """
+        Train, evaluate, save artifacts.
+
+        Parameters
+        ----------
+        mlflow_experiment : if set, log this run to MLflow under that experiment name.
+        register_as       : register model in MLflow registry under this name.
+        promote_to_prd    : set tag env=PRD and alias 'prd' on the registered model.
+
+        Returns
+        -------
+        Full result dict from ClassificationTrainer.
+        """
         from chronos_ts.labels import LabelConfig
         from chronos_ts.splits import TimeRangeSplitConfig
         from chronos_ts.classification import ClassificationConfig, ClassificationTrainer
@@ -140,7 +157,61 @@ class ClassifierRunner:
         trainer = ClassificationTrainer(train_cfg)
         result = trainer.run()
         self._print_summary(result)
+
+        if mlflow_experiment:
+            self._log_to_mlflow(result, train_cfg, mlflow_experiment, register_as, promote_to_prd)
+
         return result
+
+    def _log_to_mlflow(self, result, train_cfg, experiment_name, register_as, promote_to_prd):
+        try:
+            import mlflow
+            from chronos_ts.tracking import log_classification_run
+            from chronos_ts.labels import LabelMaker
+            import pandas as pd
+
+            mlflow.set_experiment(experiment_name)
+            run_name = f"{self.cfg.model_name}_{self.cfg.label_family}"
+
+            # Reconstruct label_maker + test data for signature
+            df = pd.read_csv(train_cfg.data_csv, parse_dates=[train_cfg.ts_col])
+            df = df.sort_values(train_cfg.ts_col).reset_index(drop=True)
+            from chronos_ts.splits import time_fraction_split
+            splits = time_fraction_split(df, train_cfg.split, ts_col=train_cfg.ts_col)
+            label_maker = LabelMaker(train_cfg.label)
+            label_maker.fit(splits["train"])
+
+            drop_set = set(train_cfg.drop_cols) | {label_maker.label_name()}
+            feature_cols = result["feature_cols"]
+            y_test_series = label_maker.transform(splits["test"])
+            mask = y_test_series.notna()
+            X_test = splits["test"].loc[mask, feature_cols]
+
+            # Load saved model for logging
+            import joblib
+            model_path = Path(train_cfg.output_dir) / f"{self.cfg.model_name}_{self.cfg.label_family}_model.joblib"
+            model = joblib.load(model_path)
+
+            with mlflow.start_run(run_name=run_name):
+                version = log_classification_run(
+                    result=result,
+                    model=model,
+                    X_test=X_test,
+                    label_maker=label_maker,
+                    run_cfg=self.cfg,
+                    register_as=register_as,
+                    promote_to_prd=promote_to_prd,
+                )
+                run_id = mlflow.active_run().info.run_id
+            print(f"\nMLflow run_id: {run_id}")
+            if version:
+                print(f"Registered model version: {version}")
+                if promote_to_prd:
+                    print(f"PRD alias set → models:/{register_as}@prd")
+            result["mlflow_run_id"] = run_id
+            result["registered_version"] = version
+        except Exception as exc:
+            print(f"[MLflow logging failed: {exc}]")
 
     # ------------------------------------------------------------------ #
 
