@@ -1,0 +1,9 @@
+{
+  "bar_type": "volume",
+  "is_proxy_from_1h": true,
+  "n_rows": 23701,
+  "n_cols": 129,
+  "ts_min": "2023-01-11 18:36:00+00:00",
+  "ts_max": "2025-11-02 15:06:00+00:00",
+  "note": "PROXY dataset: 1h bars decomposed into synthetic 1m bars. For real results run scripts/fetch_fine_data.py first."
+}

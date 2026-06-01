@@ -1,0 +1,470 @@
+{
+  "config": {
+    "data_csv": "outputs/datasets/btcusdt_volume_bars.csv",
+    "output_dir": "outputs/models/clf_volume/logreg_large_move",
+    "label": {
+      "target_family": "large_move",
+      "return_col": "log_ret_bar",
+      "horizon": 1,
+      "dead_zone_sigma": 0.1,
+      "move_quantile": 0.8,
+      "n_tokens": 5,
+      "vol_window": 6
+    },
+    "model_name": "logreg",
+    "ts_col": "bar_end",
+    "drop_cols": [
+      "bar_start",
+      "bar_end"
+    ],
+    "split": {
+      "train_frac": 0.7,
+      "val_frac": 0.15,
+      "test_frac": 0.15
+    },
+    "cv_splits": 2,
+    "n_jobs": -1,
+    "seed": 42,
+    "param_grid": {
+      "model__C": [
+        1.0
+      ]
+    },
+    "abstention_threshold": 0.65,
+    "top_k_pct": 0.2
+  },
+  "label_maker": {
+    "config": {
+      "target_family": "large_move",
+      "return_col": "log_ret_bar",
+      "horizon": 1,
+      "dead_zone_sigma": 0.1,
+      "move_quantile": 0.8,
+      "n_tokens": 5,
+      "vol_window": 6
+    },
+    "edges": [
+      0.004689161654296641
+    ],
+    "train_std": null,
+    "class_names": [
+      "down",
+      "up"
+    ]
+  },
+  "feature_cols": [
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "dollar_volume",
+    "n_trades",
+    "taker_buy_base",
+    "dt_seconds",
+    "log_ret_bar",
+    "rv_parkinson",
+    "rv_garman_klass",
+    "dt_scaled_rv",
+    "buy_vol_share",
+    "vol_imbalance",
+    "net_flow",
+    "buy_run_length",
+    "sell_run_length",
+    "log_dt_seconds",
+    "hour_sin",
+    "hour_cos",
+    "dow_sin",
+    "dow_cos",
+    "fund_cycle_sin",
+    "fund_cycle_cos",
+    "log_ret_bar_lag_1",
+    "log_ret_bar_lag_2",
+    "log_ret_bar_lag_3",
+    "log_ret_bar_lag_6",
+    "log_ret_bar_lag_12",
+    "log_ret_bar_lag_24",
+    "vol_imbalance_lag_1",
+    "vol_imbalance_lag_2",
+    "vol_imbalance_lag_3",
+    "vol_imbalance_lag_6",
+    "vol_imbalance_lag_12",
+    "vol_imbalance_lag_24",
+    "buy_vol_share_lag_1",
+    "buy_vol_share_lag_2",
+    "buy_vol_share_lag_3",
+    "buy_vol_share_lag_6",
+    "buy_vol_share_lag_12",
+    "buy_vol_share_lag_24",
+    "rv_parkinson_lag_1",
+    "rv_parkinson_lag_2",
+    "rv_parkinson_lag_3",
+    "rv_parkinson_lag_6",
+    "rv_parkinson_lag_12",
+    "rv_parkinson_lag_24",
+    "rv_garman_klass_lag_1",
+    "rv_garman_klass_lag_2",
+    "rv_garman_klass_lag_3",
+    "rv_garman_klass_lag_6",
+    "rv_garman_klass_lag_12",
+    "rv_garman_klass_lag_24",
+    "dt_scaled_rv_lag_1",
+    "dt_scaled_rv_lag_2",
+    "dt_scaled_rv_lag_3",
+    "dt_scaled_rv_lag_6",
+    "dt_scaled_rv_lag_12",
+    "dt_scaled_rv_lag_24",
+    "volume_lag_1",
+    "volume_lag_2",
+    "volume_lag_3",
+    "volume_lag_6",
+    "volume_lag_12",
+    "volume_lag_24",
+    "dollar_volume_lag_1",
+    "dollar_volume_lag_2",
+    "dollar_volume_lag_3",
+    "dollar_volume_lag_6",
+    "dollar_volume_lag_12",
+    "dollar_volume_lag_24",
+    "log_dt_seconds_lag_1",
+    "log_dt_seconds_lag_2",
+    "log_dt_seconds_lag_3",
+    "log_dt_seconds_lag_6",
+    "log_dt_seconds_lag_12",
+    "log_dt_seconds_lag_24",
+    "log_ret_bar_rmean_6",
+    "log_ret_bar_rstd_6",
+    "log_ret_bar_rmean_24",
+    "log_ret_bar_rstd_24",
+    "log_ret_bar_rmean_72",
+    "log_ret_bar_rstd_72",
+    "vol_imbalance_rmean_6",
+    "vol_imbalance_rstd_6",
+    "vol_imbalance_rmean_24",
+    "vol_imbalance_rstd_24",
+    "vol_imbalance_rmean_72",
+    "vol_imbalance_rstd_72",
+    "buy_vol_share_rmean_6",
+    "buy_vol_share_rstd_6",
+    "buy_vol_share_rmean_24",
+    "buy_vol_share_rstd_24",
+    "buy_vol_share_rmean_72",
+    "buy_vol_share_rstd_72",
+    "rv_parkinson_rmean_6",
+    "rv_parkinson_rstd_6",
+    "rv_parkinson_rmean_24",
+    "rv_parkinson_rstd_24",
+    "rv_parkinson_rmean_72",
+    "rv_parkinson_rstd_72",
+    "dt_scaled_rv_rmean_6",
+    "dt_scaled_rv_rstd_6",
+    "dt_scaled_rv_rmean_24",
+    "dt_scaled_rv_rstd_24",
+    "dt_scaled_rv_rmean_72",
+    "dt_scaled_rv_rstd_72",
+    "volume_rmean_6",
+    "volume_rstd_6",
+    "volume_rmean_24",
+    "volume_rstd_24",
+    "volume_rmean_72",
+    "volume_rstd_72",
+    "dollar_volume_rmean_6",
+    "dollar_volume_rstd_6",
+    "dollar_volume_rmean_24",
+    "dollar_volume_rstd_24",
+    "dollar_volume_rmean_72",
+    "dollar_volume_rstd_72",
+    "rv_bar_6",
+    "abs_ret_rmean_6",
+    "rv_bar_24",
+    "abs_ret_rmean_24",
+    "rv_bar_72",
+    "abs_ret_rmean_72"
+  ],
+  "n_classes": 2,
+  "best_params": {
+    "model__C": 1.0
+  },
+  "cv_best_score": 0.4912367468869364,
+  "split_sizes": {
+    "train": {
+      "n_rows": 16589,
+      "dropped_rows": 1
+    },
+    "val": {
+      "n_rows": 3554,
+      "dropped_rows": 1
+    },
+    "test": {
+      "n_rows": 3555,
+      "dropped_rows": 1
+    }
+  },
+  "baselines": {
+    "val": {
+      "majority_class": {
+        "n_samples": 3554,
+        "accuracy": 0.6691052335396737,
+        "balanced_accuracy": 0.5,
+        "f1_macro": 0.4008766014834794,
+        "f1_weighted": 0.5364572641123884,
+        "mcc": 0.0,
+        "log_loss": 11.926656270568872,
+        "roc_auc": 0.5,
+        "pr_auc": 0.3308947664603264,
+        "confident_accuracy": 0.7633802816901408,
+        "confident_balanced_accuracy": 0.5,
+        "confident_top_k_pct": 0.2,
+        "abstention_threshold": 0.65,
+        "trading_coverage": 1.0,
+        "trading_hit_rate": NaN,
+        "trading_sign_mean": NaN,
+        "trading_sharpe_annual": NaN,
+        "confusion_matrix": [
+          [
+            2378,
+            0
+          ],
+          [
+            1176,
+            0
+          ]
+        ],
+        "class_names": [
+          "down",
+          "up"
+        ],
+        "base_rates": {
+          "down": 0.6691052335396737,
+          "up": 0.3308947664603264
+        }
+      },
+      "persistence": {
+        "n_samples": 3554,
+        "accuracy": 0.4943725379853686,
+        "balanced_accuracy": 0.4957947855340622,
+        "f1_macro": 0.4804886054295186,
+        "f1_weighted": 0.5092123350889535,
+        "mcc": -0.007915307878289408,
+        "log_loss": 1.2163376021725099,
+        "roc_auc": 0.4957947855340622,
+        "pr_auc": 0.3290533932468577,
+        "confident_accuracy": 0.5084507042253521,
+        "confident_balanced_accuracy": 0.5199108241082411,
+        "confident_top_k_pct": 0.2,
+        "abstention_threshold": 0.65,
+        "trading_coverage": 1.0,
+        "trading_hit_rate": NaN,
+        "trading_sign_mean": NaN,
+        "trading_sharpe_annual": NaN,
+        "confusion_matrix": [
+          [
+            1169,
+            1209
+          ],
+          [
+            588,
+            588
+          ]
+        ],
+        "class_names": [
+          "down",
+          "up"
+        ],
+        "base_rates": {
+          "down": 0.6691052335396737,
+          "up": 0.3308947664603264
+        }
+      }
+    },
+    "test": {
+      "majority_class": {
+        "n_samples": 3555,
+        "accuracy": 0.6784810126582278,
+        "balanced_accuracy": 0.5,
+        "f1_macro": 0.4042232277526395,
+        "f1_weighted": 0.5485155698111767,
+        "mcc": 0.0,
+        "log_loss": 11.58871893776678,
+        "roc_auc": 0.5,
+        "pr_auc": 0.32151898734177214,
+        "confident_accuracy": 0.6526019690576652,
+        "confident_balanced_accuracy": 0.5,
+        "confident_top_k_pct": 0.2,
+        "abstention_threshold": 0.65,
+        "trading_coverage": 1.0,
+        "trading_hit_rate": NaN,
+        "trading_sign_mean": NaN,
+        "trading_sharpe_annual": NaN,
+        "confusion_matrix": [
+          [
+            2412,
+            0
+          ],
+          [
+            1143,
+            0
+          ]
+        ],
+        "class_names": [
+          "down",
+          "up"
+        ],
+        "base_rates": {
+          "down": 0.6784810126582278,
+          "up": 0.32151898734177214
+        }
+      },
+      "persistence": {
+        "n_samples": 3555,
+        "accuracy": 0.480168776371308,
+        "balanced_accuracy": 0.4799770830884945,
+        "f1_macro": 0.46434581706986156,
+        "f1_weighted": 0.4972088863882503,
+        "mcc": -0.03741083975603712,
+        "log_loss": 1.2475464562815488,
+        "roc_auc": 0.4799770830884945,
+        "pr_auc": 0.31325172184428807,
+        "confident_accuracy": 0.49507735583684953,
+        "confident_balanced_accuracy": 0.4995419167946391,
+        "confident_top_k_pct": 0.2,
+        "abstention_threshold": 0.65,
+        "trading_coverage": 1.0,
+        "trading_hit_rate": NaN,
+        "trading_sign_mean": NaN,
+        "trading_sharpe_annual": NaN,
+        "confusion_matrix": [
+          [
+            1159,
+            1253
+          ],
+          [
+            595,
+            548
+          ]
+        ],
+        "class_names": [
+          "down",
+          "up"
+        ],
+        "base_rates": {
+          "down": 0.6784810126582278,
+          "up": 0.32151898734177214
+        }
+      }
+    }
+  },
+  "metrics": {
+    "train": {
+      "n_samples": 16589,
+      "accuracy": 0.8115618783531255,
+      "balanced_accuracy": 0.5719925893152659,
+      "f1_macro": 0.5800573944836304,
+      "f1_weighted": 0.7671292567839538,
+      "mcc": 0.24739144358819018,
+      "log_loss": 0.4294812270436051,
+      "roc_auc": 0.7604340072842346,
+      "pr_auc": 0.45514961613081617,
+      "confident_accuracy": 0.9589990955682846,
+      "confident_balanced_accuracy": 0.614820599803152,
+      "confident_top_k_pct": 0.2,
+      "abstention_threshold": 0.65,
+      "trading_coverage": 0.8852251491952499,
+      "trading_hit_rate": 0.48144364998297584,
+      "trading_sign_mean": -0.00018694037371812748,
+      "trading_sharpe_annual": -4.19815493530463,
+      "confusion_matrix": [
+        [
+          12890,
+          381
+        ],
+        [
+          2745,
+          573
+        ]
+      ],
+      "class_names": [
+        "down",
+        "up"
+      ],
+      "base_rates": {
+        "down": 0.7999879438181928,
+        "up": 0.20001205618180723
+      }
+    },
+    "val": {
+      "n_samples": 3554,
+      "accuracy": 0.6449071468767585,
+      "balanced_accuracy": 0.5809907857171464,
+      "f1_macro": 0.5829327388019508,
+      "f1_weighted": 0.637307365448607,
+      "mcc": 0.1690891450177097,
+      "log_loss": 0.6440027619554697,
+      "roc_auc": 0.6231312541837593,
+      "pr_auc": 0.44920388809886735,
+      "confident_accuracy": 0.7647887323943662,
+      "confident_balanced_accuracy": 0.6339232920095008,
+      "confident_top_k_pct": 0.2,
+      "abstention_threshold": 0.65,
+      "trading_coverage": 0.5534608891389983,
+      "trading_hit_rate": 0.48500254194204373,
+      "trading_sign_mean": -0.0001492120317101621,
+      "trading_sharpe_annual": -2.6915563428774623,
+      "confusion_matrix": [
+        [
+          1831,
+          547
+        ],
+        [
+          715,
+          461
+        ]
+      ],
+      "class_names": [
+        "down",
+        "up"
+      ],
+      "base_rates": {
+        "down": 0.6691052335396737,
+        "up": 0.3308947664603264
+      }
+    },
+    "test": {
+      "n_samples": 3555,
+      "accuracy": 0.569901547116737,
+      "balanced_accuracy": 0.5594533892218696,
+      "f1_macro": 0.5461043608542124,
+      "f1_weighted": 0.5832034141308018,
+      "mcc": 0.11164379213835889,
+      "log_loss": 0.6987366986343998,
+      "roc_auc": 0.5870679411342239,
+      "pr_auc": 0.416345472881696,
+      "confident_accuracy": 0.6061884669479606,
+      "confident_balanced_accuracy": 0.6317542213883678,
+      "confident_top_k_pct": 0.2,
+      "abstention_threshold": 0.65,
+      "trading_coverage": 0.3263009845288326,
+      "trading_hit_rate": 0.47844827586206895,
+      "trading_sign_mean": -0.00026984481734115796,
+      "trading_sharpe_annual": -3.972910172722411,
+      "confusion_matrix": [
+        [
+          1420,
+          992
+        ],
+        [
+          537,
+          606
+        ]
+      ],
+      "class_names": [
+        "down",
+        "up"
+      ],
+      "base_rates": {
+        "down": 0.6784810126582278,
+        "up": 0.32151898734177214
+      }
+    }
+  }
+}

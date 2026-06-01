@@ -1,0 +1,482 @@
+{
+  "config": {
+    "data_csv": "outputs/datasets/btcusdt_volume_bars.csv",
+    "output_dir": "outputs/models/clf_volume/catboost_large_move",
+    "label": {
+      "target_family": "large_move",
+      "return_col": "log_ret_bar",
+      "horizon": 1,
+      "dead_zone_sigma": 0.1,
+      "move_quantile": 0.8,
+      "n_tokens": 5,
+      "vol_window": 6
+    },
+    "model_name": "catboost",
+    "ts_col": "bar_end",
+    "drop_cols": [
+      "bar_start",
+      "bar_end"
+    ],
+    "split": {
+      "train_frac": 0.7,
+      "val_frac": 0.15,
+      "test_frac": 0.15
+    },
+    "cv_splits": 2,
+    "n_jobs": -1,
+    "seed": 42,
+    "param_grid": {
+      "depth": [
+        4
+      ],
+      "learning_rate": [
+        0.05
+      ],
+      "n_estimators": [
+        200
+      ],
+      "l2_leaf_reg": [
+        3
+      ]
+    },
+    "abstention_threshold": 0.65,
+    "top_k_pct": 0.2
+  },
+  "label_maker": {
+    "config": {
+      "target_family": "large_move",
+      "return_col": "log_ret_bar",
+      "horizon": 1,
+      "dead_zone_sigma": 0.1,
+      "move_quantile": 0.8,
+      "n_tokens": 5,
+      "vol_window": 6
+    },
+    "edges": [
+      0.004689161654296641
+    ],
+    "train_std": null,
+    "class_names": [
+      "down",
+      "up"
+    ]
+  },
+  "feature_cols": [
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "dollar_volume",
+    "n_trades",
+    "taker_buy_base",
+    "dt_seconds",
+    "log_ret_bar",
+    "rv_parkinson",
+    "rv_garman_klass",
+    "dt_scaled_rv",
+    "buy_vol_share",
+    "vol_imbalance",
+    "net_flow",
+    "buy_run_length",
+    "sell_run_length",
+    "log_dt_seconds",
+    "hour_sin",
+    "hour_cos",
+    "dow_sin",
+    "dow_cos",
+    "fund_cycle_sin",
+    "fund_cycle_cos",
+    "log_ret_bar_lag_1",
+    "log_ret_bar_lag_2",
+    "log_ret_bar_lag_3",
+    "log_ret_bar_lag_6",
+    "log_ret_bar_lag_12",
+    "log_ret_bar_lag_24",
+    "vol_imbalance_lag_1",
+    "vol_imbalance_lag_2",
+    "vol_imbalance_lag_3",
+    "vol_imbalance_lag_6",
+    "vol_imbalance_lag_12",
+    "vol_imbalance_lag_24",
+    "buy_vol_share_lag_1",
+    "buy_vol_share_lag_2",
+    "buy_vol_share_lag_3",
+    "buy_vol_share_lag_6",
+    "buy_vol_share_lag_12",
+    "buy_vol_share_lag_24",
+    "rv_parkinson_lag_1",
+    "rv_parkinson_lag_2",
+    "rv_parkinson_lag_3",
+    "rv_parkinson_lag_6",
+    "rv_parkinson_lag_12",
+    "rv_parkinson_lag_24",
+    "rv_garman_klass_lag_1",
+    "rv_garman_klass_lag_2",
+    "rv_garman_klass_lag_3",
+    "rv_garman_klass_lag_6",
+    "rv_garman_klass_lag_12",
+    "rv_garman_klass_lag_24",
+    "dt_scaled_rv_lag_1",
+    "dt_scaled_rv_lag_2",
+    "dt_scaled_rv_lag_3",
+    "dt_scaled_rv_lag_6",
+    "dt_scaled_rv_lag_12",
+    "dt_scaled_rv_lag_24",
+    "volume_lag_1",
+    "volume_lag_2",
+    "volume_lag_3",
+    "volume_lag_6",
+    "volume_lag_12",
+    "volume_lag_24",
+    "dollar_volume_lag_1",
+    "dollar_volume_lag_2",
+    "dollar_volume_lag_3",
+    "dollar_volume_lag_6",
+    "dollar_volume_lag_12",
+    "dollar_volume_lag_24",
+    "log_dt_seconds_lag_1",
+    "log_dt_seconds_lag_2",
+    "log_dt_seconds_lag_3",
+    "log_dt_seconds_lag_6",
+    "log_dt_seconds_lag_12",
+    "log_dt_seconds_lag_24",
+    "log_ret_bar_rmean_6",
+    "log_ret_bar_rstd_6",
+    "log_ret_bar_rmean_24",
+    "log_ret_bar_rstd_24",
+    "log_ret_bar_rmean_72",
+    "log_ret_bar_rstd_72",
+    "vol_imbalance_rmean_6",
+    "vol_imbalance_rstd_6",
+    "vol_imbalance_rmean_24",
+    "vol_imbalance_rstd_24",
+    "vol_imbalance_rmean_72",
+    "vol_imbalance_rstd_72",
+    "buy_vol_share_rmean_6",
+    "buy_vol_share_rstd_6",
+    "buy_vol_share_rmean_24",
+    "buy_vol_share_rstd_24",
+    "buy_vol_share_rmean_72",
+    "buy_vol_share_rstd_72",
+    "rv_parkinson_rmean_6",
+    "rv_parkinson_rstd_6",
+    "rv_parkinson_rmean_24",
+    "rv_parkinson_rstd_24",
+    "rv_parkinson_rmean_72",
+    "rv_parkinson_rstd_72",
+    "dt_scaled_rv_rmean_6",
+    "dt_scaled_rv_rstd_6",
+    "dt_scaled_rv_rmean_24",
+    "dt_scaled_rv_rstd_24",
+    "dt_scaled_rv_rmean_72",
+    "dt_scaled_rv_rstd_72",
+    "volume_rmean_6",
+    "volume_rstd_6",
+    "volume_rmean_24",
+    "volume_rstd_24",
+    "volume_rmean_72",
+    "volume_rstd_72",
+    "dollar_volume_rmean_6",
+    "dollar_volume_rstd_6",
+    "dollar_volume_rmean_24",
+    "dollar_volume_rstd_24",
+    "dollar_volume_rmean_72",
+    "dollar_volume_rstd_72",
+    "rv_bar_6",
+    "abs_ret_rmean_6",
+    "rv_bar_24",
+    "abs_ret_rmean_24",
+    "rv_bar_72",
+    "abs_ret_rmean_72"
+  ],
+  "n_classes": 2,
+  "best_params": {
+    "depth": 4,
+    "l2_leaf_reg": 3,
+    "learning_rate": 0.05,
+    "n_estimators": 200
+  },
+  "cv_best_score": 0.5726019762096952,
+  "split_sizes": {
+    "train": {
+      "n_rows": 16589,
+      "dropped_rows": 1
+    },
+    "val": {
+      "n_rows": 3554,
+      "dropped_rows": 1
+    },
+    "test": {
+      "n_rows": 3555,
+      "dropped_rows": 1
+    }
+  },
+  "baselines": {
+    "val": {
+      "majority_class": {
+        "n_samples": 3554,
+        "accuracy": 0.6691052335396737,
+        "balanced_accuracy": 0.5,
+        "f1_macro": 0.4008766014834794,
+        "f1_weighted": 0.5364572641123884,
+        "mcc": 0.0,
+        "log_loss": 11.926656270568872,
+        "roc_auc": 0.5,
+        "pr_auc": 0.3308947664603264,
+        "confident_accuracy": 0.7633802816901408,
+        "confident_balanced_accuracy": 0.5,
+        "confident_top_k_pct": 0.2,
+        "abstention_threshold": 0.65,
+        "trading_coverage": 1.0,
+        "trading_hit_rate": NaN,
+        "trading_sign_mean": NaN,
+        "trading_sharpe_annual": NaN,
+        "confusion_matrix": [
+          [
+            2378,
+            0
+          ],
+          [
+            1176,
+            0
+          ]
+        ],
+        "class_names": [
+          "down",
+          "up"
+        ],
+        "base_rates": {
+          "down": 0.6691052335396737,
+          "up": 0.3308947664603264
+        }
+      },
+      "persistence": {
+        "n_samples": 3554,
+        "accuracy": 0.4943725379853686,
+        "balanced_accuracy": 0.4957947855340622,
+        "f1_macro": 0.4804886054295186,
+        "f1_weighted": 0.5092123350889535,
+        "mcc": -0.007915307878289408,
+        "log_loss": 1.2163376021725099,
+        "roc_auc": 0.4957947855340622,
+        "pr_auc": 0.3290533932468577,
+        "confident_accuracy": 0.5084507042253521,
+        "confident_balanced_accuracy": 0.5199108241082411,
+        "confident_top_k_pct": 0.2,
+        "abstention_threshold": 0.65,
+        "trading_coverage": 1.0,
+        "trading_hit_rate": NaN,
+        "trading_sign_mean": NaN,
+        "trading_sharpe_annual": NaN,
+        "confusion_matrix": [
+          [
+            1169,
+            1209
+          ],
+          [
+            588,
+            588
+          ]
+        ],
+        "class_names": [
+          "down",
+          "up"
+        ],
+        "base_rates": {
+          "down": 0.6691052335396737,
+          "up": 0.3308947664603264
+        }
+      }
+    },
+    "test": {
+      "majority_class": {
+        "n_samples": 3555,
+        "accuracy": 0.6784810126582278,
+        "balanced_accuracy": 0.5,
+        "f1_macro": 0.4042232277526395,
+        "f1_weighted": 0.5485155698111767,
+        "mcc": 0.0,
+        "log_loss": 11.58871893776678,
+        "roc_auc": 0.5,
+        "pr_auc": 0.32151898734177214,
+        "confident_accuracy": 0.6526019690576652,
+        "confident_balanced_accuracy": 0.5,
+        "confident_top_k_pct": 0.2,
+        "abstention_threshold": 0.65,
+        "trading_coverage": 1.0,
+        "trading_hit_rate": NaN,
+        "trading_sign_mean": NaN,
+        "trading_sharpe_annual": NaN,
+        "confusion_matrix": [
+          [
+            2412,
+            0
+          ],
+          [
+            1143,
+            0
+          ]
+        ],
+        "class_names": [
+          "down",
+          "up"
+        ],
+        "base_rates": {
+          "down": 0.6784810126582278,
+          "up": 0.32151898734177214
+        }
+      },
+      "persistence": {
+        "n_samples": 3555,
+        "accuracy": 0.480168776371308,
+        "balanced_accuracy": 0.4799770830884945,
+        "f1_macro": 0.46434581706986156,
+        "f1_weighted": 0.4972088863882503,
+        "mcc": -0.03741083975603712,
+        "log_loss": 1.2475464562815488,
+        "roc_auc": 0.4799770830884945,
+        "pr_auc": 0.31325172184428807,
+        "confident_accuracy": 0.49507735583684953,
+        "confident_balanced_accuracy": 0.4995419167946391,
+        "confident_top_k_pct": 0.2,
+        "abstention_threshold": 0.65,
+        "trading_coverage": 1.0,
+        "trading_hit_rate": NaN,
+        "trading_sign_mean": NaN,
+        "trading_sharpe_annual": NaN,
+        "confusion_matrix": [
+          [
+            1159,
+            1253
+          ],
+          [
+            595,
+            548
+          ]
+        ],
+        "class_names": [
+          "down",
+          "up"
+        ],
+        "base_rates": {
+          "down": 0.6784810126582278,
+          "up": 0.32151898734177214
+        }
+      }
+    }
+  },
+  "metrics": {
+    "train": {
+      "n_samples": 16589,
+      "accuracy": 0.6872023630116342,
+      "balanced_accuracy": 0.7152150589721232,
+      "f1_macro": 0.6336206025671531,
+      "f1_weighted": 0.7176841684095113,
+      "mcc": 0.34912950855799474,
+      "log_loss": 0.5567486829842214,
+      "roc_auc": 0.7910092476177849,
+      "pr_auc": 0.4982193922665774,
+      "confident_accuracy": 0.9309617123907145,
+      "confident_balanced_accuracy": 0.9087319011268298,
+      "confident_top_k_pct": 0.2,
+      "abstention_threshold": 0.65,
+      "trading_coverage": 0.5943094821869914,
+      "trading_hit_rate": 0.4837204584643473,
+      "trading_sign_mean": -0.00013830609461263412,
+      "trading_sharpe_annual": -2.534811021528125,
+      "confusion_matrix": [
+        [
+          8872,
+          4399
+        ],
+        [
+          790,
+          2528
+        ]
+      ],
+      "class_names": [
+        "down",
+        "up"
+      ],
+      "base_rates": {
+        "down": 0.7999879438181928,
+        "up": 0.20001205618180723
+      }
+    },
+    "val": {
+      "n_samples": 3554,
+      "accuracy": 0.4800225098480585,
+      "balanced_accuracy": 0.5519082948570513,
+      "f1_macro": 0.4796738383318867,
+      "f1_weighted": 0.4751183691749462,
+      "mcc": 0.10609947302600482,
+      "log_loss": 0.7308589574239165,
+      "roc_auc": 0.6150358587505651,
+      "pr_auc": 0.45536381350512944,
+      "confident_accuracy": 0.5366197183098591,
+      "confident_balanced_accuracy": 0.5509131640199871,
+      "confident_top_k_pct": 0.2,
+      "abstention_threshold": 0.65,
+      "trading_coverage": 0.2543612830613393,
+      "trading_hit_rate": 0.4358407079646018,
+      "trading_sign_mean": -0.0007154001612359808,
+      "trading_sharpe_annual": -8.580941282818797,
+      "confusion_matrix": [
+        [
+          807,
+          1571
+        ],
+        [
+          277,
+          899
+        ]
+      ],
+      "class_names": [
+        "down",
+        "up"
+      ],
+      "base_rates": {
+        "down": 0.6691052335396737,
+        "up": 0.3308947664603264
+      }
+    },
+    "test": {
+      "n_samples": 3555,
+      "accuracy": 0.5943741209563994,
+      "balanced_accuracy": 0.5710440579255951,
+      "f1_macro": 0.5626827305783499,
+      "f1_weighted": 0.6047061102959517,
+      "mcc": 0.13496724352963715,
+      "log_loss": 0.6707718351129744,
+      "roc_auc": 0.6043419531099243,
+      "pr_auc": 0.443252380857007,
+      "confident_accuracy": 0.6610407876230661,
+      "confident_balanced_accuracy": 0.669481287488384,
+      "confident_top_k_pct": 0.2,
+      "abstention_threshold": 0.65,
+      "trading_coverage": 0.2947960618846695,
+      "trading_hit_rate": 0.47900763358778625,
+      "trading_sign_mean": -0.0005421914401410559,
+      "trading_sharpe_annual": -7.981952839687763,
+      "confusion_matrix": [
+        [
+          1535,
+          877
+        ],
+        [
+          565,
+          578
+        ]
+      ],
+      "class_names": [
+        "down",
+        "up"
+      ],
+      "base_rates": {
+        "down": 0.6784810126582278,
+        "up": 0.32151898734177214
+      }
+    }
+  }
+}

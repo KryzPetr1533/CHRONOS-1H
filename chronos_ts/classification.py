@@ -181,12 +181,16 @@ class ClassificationTrainer:
 
         for split_name in ("train", "val", "test"):
             X, y = Xs[split_name], ys[split_name]
-            proba = best_model.predict_proba(X)
-            y_pred = best_model.predict(X)
+            proba = np.atleast_2d(best_model.predict_proba(X))
+            # CatBoost multiclass returns (n,) int array; ensure 1-D int
+            y_pred = np.asarray(best_model.predict(X), dtype=float).ravel().astype(int)
 
+            # Use the configured return column (log_ret_1h for 1h data, log_ret_bar for event bars)
+            _ret_col_name = self.config.label.return_col
+            _available = labeled[split_name][0].columns
             ret_col = labeled[split_name][0].loc[
-                labeled[split_name][1].notna(), "log_ret_1h"
-            ].to_numpy(dtype=float) if "log_ret_1h" in df.columns else None
+                labeled[split_name][1].notna(), _ret_col_name
+            ].to_numpy(dtype=float) if _ret_col_name in _available else None
 
             metrics[split_name] = evaluate_classification(
                 y, y_pred, proba,
@@ -237,16 +241,43 @@ class ClassificationTrainer:
 
     def _make_estimator(self, n_classes: int):
         name = self.config.model_name.lower()
-        est = ClassifierFactory.make(name, seed=self.config.seed)
-        # Override to multi-class where needed
+        seed = self.config.seed
+
         if n_classes > 2:
+            # Build fresh multi-class estimators to avoid conflicts from
+            # set_params() on a binary-initialized model (catboost especially).
+            if name == "catboost":
+                if CatBoostClassifier is None:
+                    raise ImportError("catboost is not installed")
+                return CatBoostClassifier(
+                    loss_function="MultiClass",
+                    eval_metric="Accuracy",
+                    verbose=False,
+                    random_seed=seed,
+                    allow_writing_files=False,
+                )
             if name == "lightgbm":
-                est.set_params(objective="multiclass", num_class=n_classes)
-            elif name == "xgboost":
-                est.set_params(objective="multi:softprob", num_class=n_classes)
-            elif name == "catboost":
-                est.set_params(loss_function="MultiClass")
-        return est
+                if LGBMClassifier is None:
+                    raise ImportError("lightgbm is not installed")
+                return LGBMClassifier(
+                    objective="multiclass",
+                    num_class=n_classes,
+                    random_state=seed,
+                    n_jobs=-1,
+                    verbose=-1,
+                )
+            if name == "xgboost":
+                if XGBClassifier is None:
+                    raise ImportError("xgboost is not installed")
+                return XGBClassifier(
+                    objective="multi:softprob",
+                    num_class=n_classes,
+                    random_state=seed,
+                    n_jobs=-1,
+                    eval_metric="mlogloss",
+                )
+
+        return ClassifierFactory.make(name, seed=seed)
 
     def _fresh_estimator(self, estimator):
         try:
@@ -312,8 +343,9 @@ class ClassificationTrainer:
             }
 
             # Persistence baseline (binary direction targets only)
-            if "log_ret_1h" in split_df.columns and n_classes == 2:
-                prev_ret = split_df.loc[mask, "log_ret_1h"].to_numpy(dtype=float)
+            _ret_col = self.config.label.return_col
+            if _ret_col in split_df.columns and n_classes == 2:
+                prev_ret = split_df.loc[mask, _ret_col].to_numpy(dtype=float)
                 y_persist = (prev_ret > 0).astype(int)
                 proba_persist = np.zeros((n, 2), dtype=float)
                 proba_persist[y_persist == 1, 1] = 0.9
