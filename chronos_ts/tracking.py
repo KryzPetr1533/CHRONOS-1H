@@ -57,14 +57,33 @@ def log_classification_run(result: dict[str, Any], model: Any, X_test: pd.DataFr
         sample = X_test.head(5)
         proba = model.predict_proba(sample)
         signature = infer_signature(sample, proba)
-        model_info = mlflow.sklearn.log_model(sk_model=model, artifact_path='model', signature=signature, input_example=sample, registered_model_name=register_as)
+        model_info = _log_model_artifact(model, sample, signature, register_as)
         if register_as and model_info.registered_model_version:
             registered_version = model_info.registered_model_version
             if promote_to_prd:
                 _set_prd_alias(register_as, registered_version)
+        elif register_as:
+            run_id = mlflow.active_run().info.run_id
+            mv = mlflow.register_model(f'runs:/{run_id}/model', register_as)
+            registered_version = mv.version
+            if promote_to_prd:
+                _set_prd_alias(register_as, registered_version)
     except Exception as exc:
-        mlflow.log_param('model_log_error', str(exc)[:200])
+        err = str(exc)[:500]
+        mlflow.log_param('model_log_error', err)
+        print(f'[MLflow model registration failed: {err}]')
     return registered_version
+
+
+def _log_model_artifact(model: Any, sample: pd.DataFrame, signature: Any, register_as: Optional[str]):
+    import mlflow
+    model_module = type(model).__module__
+    kwargs = dict(artifact_path='model', signature=signature, input_example=sample)
+    if 'catboost' in model_module:
+        import mlflow.catboost
+        return mlflow.catboost.log_model(cb_model=model, **kwargs)
+    import mlflow.sklearn
+    return mlflow.sklearn.log_model(sk_model=model, **kwargs)
 
 def _set_prd_alias(model_name: str, version: str) -> None:
     import mlflow

@@ -86,7 +86,7 @@ DOCKER_RUN_BASE = docker run --rm -it --name $(CONTAINER) \
 .PHONY: help build rebuild bash start exec attach stop rm logs jupyter jupyter-secure prune cuda-check nvidia-smi \
         build-clf-dataset train-clf train-clf-sweep \
         mlflow-up mlflow-down mlflow-check-env minio-check-running docker-image-check \
-        upload-datasets s3-ls-datasets train-final train-smoke predict-prd token-transformer
+        upload-datasets s3-ls-datasets train-final train-smoke register-prd predict-prd token-transformer
 
 help:
 	@echo "Targets:"
@@ -233,6 +233,12 @@ train-smoke: mlflow-check-env minio-check-running docker-image-check
 	  python scripts/train_mlflow.py model=logreg label=vol_regime data=btcusdt_rich \
 	  mlflow.promote_to_prd=false mlflow.tracking_uri=http://chronos_mlflow:5000 \
 	  mlflow.s3_endpoint_url=http://minio:9000 cv_splits=2
+
+# Register latest local catboost_vol_regime joblib to Model Registry (if train-final logging failed)
+register-prd: mlflow-check-env minio-check-running docker-image-check
+	$(DOCKER_RUN_MLFLOW) -e MLFLOW_TRACKING_URI=http://chronos_mlflow:5000 $(IMAGE) \
+	  python scripts/register_prd_from_artifacts.py \
+	  --tracking-uri http://chronos_mlflow:5000 --s3-endpoint http://minio:9000
 
 # Train final model and promote to PRD (requires mlflow-up)
 train-final: mlflow-check-env minio-check-running docker-image-check

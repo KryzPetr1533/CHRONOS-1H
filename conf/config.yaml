@@ -5,6 +5,7 @@ defaults:
   - split: default
   - mlflow: local
   - experiment: default
+  - predict: default
   - _self_
 
 seed: 42

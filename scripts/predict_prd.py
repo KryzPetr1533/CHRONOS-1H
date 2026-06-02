@@ -45,9 +45,13 @@ class PrdPredictor:
         lm.fit(splits['train'])
         y_test = lm.transform(splits['test'])
         mask = y_test.notna()
-        X_test = splits['test'].loc[mask, [c for c in feature_cols if c in splits['test'].columns]]
+        missing = [c for c in feature_cols if c not in splits['test'].columns]
+        if missing:
+            raise ValueError(f'{len(missing)} feature columns missing from input CSV, e.g. {missing[:5]}')
+        X_test = splits['test'].loc[mask, feature_cols]
         sample = X_test.tail(n_rows).reset_index(drop=True)
-        preds = self._model.predict(sample).astype(int)
+        import numpy as np
+        preds = np.asarray(self._model.predict(sample)).ravel().astype(int)
         class_names = lm.class_names()
         result = pd.DataFrame({'ts': splits['test'].loc[mask, 'ts'].tail(n_rows).values if 'ts' in splits['test'].columns else range(n_rows), 'y_true': [class_names[i] for i in y_test[mask].values.astype(int)[-n_rows:]], 'y_pred': [class_names[i] for i in preds]})
         result['correct'] = result['y_true'] == result['y_pred']
