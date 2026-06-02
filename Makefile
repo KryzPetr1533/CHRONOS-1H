@@ -20,6 +20,9 @@ GID := $(shell id -g 2>/dev/null || echo 1000)
 # Absolute working directory on host (the dir you call `make` from)
 WORKDIR_ABS := $(shell pwd)
 
+# Compose CLI: Colima often lacks `docker compose` plugin — prefer docker-compose from brew
+DOCKER_COMPOSE      ?= $(shell if command -v docker-compose >/dev/null 2>&1; then echo docker-compose; else echo "docker compose"; fi)
+
 # MinIO / dataset upload (scripts/upload_datasets_s3.py)
 MLFLOW_DIR          ?= mlflow
 MLFLOW_ENV          := $(MLFLOW_DIR)/.env
@@ -29,8 +32,12 @@ DATASET_TAG         ?= $(shell date +%Y%m%d)
 S3_DATASET_PREFIX   ?= chronos/datasets
 MINIO_ENDPOINT      ?= http://minio:9000
 
+# Memory for training containers (Colima default is often too small for full datasets)
+DOCKER_MEMORY       ?= 6g
+
 # Non-interactive dev container on the MLflow compose network (MinIO host: minio)
 DOCKER_RUN_MLFLOW = docker run --rm \
+	--memory=$(DOCKER_MEMORY) \
 	--network $(MLFLOW_NETWORK) \
 	--env-file $(MLFLOW_ENV) \
 	-e MLFLOW_S3_ENDPOINT_URL=$(MINIO_ENDPOINT) \
@@ -79,7 +86,7 @@ DOCKER_RUN_BASE = docker run --rm -it --name $(CONTAINER) \
 .PHONY: help build rebuild bash start exec attach stop rm logs jupyter jupyter-secure prune cuda-check nvidia-smi \
         build-clf-dataset train-clf train-clf-sweep \
         mlflow-up mlflow-down mlflow-check-env minio-check-running docker-image-check \
-        upload-datasets s3-ls-datasets train-final predict-prd token-transformer
+        upload-datasets s3-ls-datasets train-final train-smoke predict-prd token-transformer
 
 help:
 	@echo "Targets:"
@@ -104,6 +111,8 @@ help:
 	@echo "  upload-datasets     Upload DATASET_SRC to MinIO via dev image (needs build + mlflow-up)"
 	@echo "  s3-ls-datasets      List dataset prefixes in MinIO (dev image)"
 	@echo "  train-final         Train + log to MLflow + promote PRD"
+	@echo "  train-smoke         Quick MLflow train (logreg, rich data) to verify stack"
+	@echo "                      Colima: colima start --memory 8  (train-final needs more RAM)"
 	@echo "  predict-prd         Load models:/chronos_1h_prd@prd and predict"
 	@echo ""
 	@echo "Config examples:"
@@ -201,10 +210,10 @@ docker-image-check:
 	  (echo "Docker image $(IMAGE) not found. Run: make build" && exit 1)
 
 mlflow-up: mlflow-check-env
-	cd $(MLFLOW_DIR) && docker compose up -d
+	cd $(MLFLOW_DIR) && $(DOCKER_COMPOSE) up -d
 
 mlflow-down:
-	cd $(MLFLOW_DIR) && docker compose down
+	cd $(MLFLOW_DIR) && $(DOCKER_COMPOSE) down
 
 # Upload local datasets to MinIO (dev image on mlflow_internal → http://minio:9000).
 # Override: make upload-datasets DATASET_TAG=v2 DATASET_SRC=outputs/datasets
@@ -218,16 +227,24 @@ s3-ls-datasets: mlflow-check-env minio-check-running docker-image-check
 	  --list --prefix "$(S3_DATASET_PREFIX)"
 
 # ------- MLflow-integrated training (T2-P2 bonus) -------
+# Quick end-to-end check (logreg, no PRD promotion)
+train-smoke: mlflow-check-env minio-check-running docker-image-check
+	$(DOCKER_RUN_MLFLOW) -e MLFLOW_TRACKING_URI=http://chronos_mlflow:5000 $(IMAGE) \
+	  python scripts/train_mlflow.py model=logreg label=vol_regime data=btcusdt_rich \
+	  mlflow.promote_to_prd=false mlflow.tracking_uri=http://chronos_mlflow:5000 \
+	  mlflow.s3_endpoint_url=http://minio:9000 cv_splits=2
+
 # Train final model and promote to PRD (requires mlflow-up)
 train-final: mlflow-check-env minio-check-running docker-image-check
 	$(DOCKER_RUN_MLFLOW) -e MLFLOW_TRACKING_URI=http://chronos_mlflow:5000 $(IMAGE) \
 	  python scripts/train_mlflow.py experiment=final mlflow.promote_to_prd=true \
-	  mlflow.tracking_uri=http://chronos_mlflow:5000
+	  mlflow.tracking_uri=http://chronos_mlflow:5000 mlflow.s3_endpoint_url=http://minio:9000
 
 # Load PRD model and predict (requires mlflow-up + trained PRD)
 predict-prd: mlflow-check-env minio-check-running docker-image-check
 	$(DOCKER_RUN_MLFLOW) -e MLFLOW_TRACKING_URI=http://chronos_mlflow:5000 $(IMAGE) \
-	  python scripts/predict_prd.py mlflow.tracking_uri=http://chronos_mlflow:5000
+	  python scripts/predict_prd.py mlflow.tracking_uri=http://chronos_mlflow:5000 \
+	  mlflow.s3_endpoint_url=http://minio:9000
 
 # Train token transformer (no MLflow required)
 token-transformer:

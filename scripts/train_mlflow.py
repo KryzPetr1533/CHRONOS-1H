@@ -43,7 +43,8 @@ class TrainWithMLflow:
         run_name = cfg.experiment.get('name', f'{cfg.model_name}_{cfg.label.target_family}')
         run_cfg = _build_run_config_from_hydra(cfg)
         run_cfg.output_dir = str(project_root / cfg.output_base)
-        result = ClassifierRunner(run_cfg).run(mlflow_experiment=ml.experiment_name, register_as=ml.registered_model_name, promote_to_prd=bool(ml.promote_to_prd))
+        register_as = ml.registered_model_name if ml.promote_to_prd else None
+        result = ClassifierRunner(run_cfg).run(mlflow_experiment=ml.experiment_name, register_as=register_as, promote_to_prd=bool(ml.promote_to_prd))
         try:
             import mlflow
             hydra_cfg_path = Path(hydra.core.hydra_config.HydraConfig.get().runtime.output_dir) / '.hydra'

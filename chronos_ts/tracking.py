@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 
 def configure_mlflow(tracking_uri: str='http://localhost:5050', experiment_name: str='chronos-1h-classification', s3_endpoint_url: str='http://localhost:9000', aws_access_key_id: str='admin', aws_secret_access_key: str='password') -> str:
-    if 'minio:9000' in s3_endpoint_url:
-        s3_endpoint_url = 'http://localhost:9000'
+    if os.environ.get('MLFLOW_S3_ENDPOINT_URL'):
+        s3_endpoint_url = os.environ['MLFLOW_S3_ENDPOINT_URL']
     os.environ['MLFLOW_S3_ENDPOINT_URL'] = s3_endpoint_url
     os.environ['AWS_ACCESS_KEY_ID'] = aws_access_key_id
     os.environ['AWS_SECRET_ACCESS_KEY'] = aws_secret_access_key
