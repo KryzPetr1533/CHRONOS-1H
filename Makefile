@@ -27,7 +27,19 @@ MLFLOW_NETWORK      ?= mlflow_internal
 DATASET_SRC         ?= outputs/datasets
 DATASET_TAG         ?= $(shell date +%Y%m%d)
 S3_DATASET_PREFIX   ?= chronos/datasets
-PYTHON              ?= python3
+MINIO_ENDPOINT      ?= http://minio:9000
+
+# Non-interactive dev container on the MLflow compose network (MinIO host: minio)
+DOCKER_RUN_MLFLOW = docker run --rm \
+	--network $(MLFLOW_NETWORK) \
+	--env-file $(MLFLOW_ENV) \
+	-e MLFLOW_S3_ENDPOINT_URL=$(MINIO_ENDPOINT) \
+	-e PYTHONPATH="$(WORKDIR_ABS)" \
+	-v "$(WORKDIR_ABS)":"$(WORKDIR_ABS)" \
+	-w "$(WORKDIR_ABS)" \
+	-u $(UID):$(GID) \
+	-e HOME="$(WORKDIR_ABS)" \
+	-e TZ=UTC
 
 # GPU flags (no-op if GPU is empty or "none")
 ifeq ($(GPU),)
@@ -66,7 +78,7 @@ DOCKER_RUN_BASE = docker run --rm -it --name $(CONTAINER) \
 # ------- Targets -------
 .PHONY: help build rebuild bash start exec attach stop rm logs jupyter jupyter-secure prune cuda-check nvidia-smi \
         build-clf-dataset train-clf train-clf-sweep \
-        mlflow-up mlflow-down mlflow-check-env minio-check-running \
+        mlflow-up mlflow-down mlflow-check-env minio-check-running docker-image-check \
         upload-datasets s3-ls-datasets train-final predict-prd token-transformer
 
 help:
@@ -89,8 +101,8 @@ help:
 	@echo "MLflow / S3 (MinIO):"
 	@echo "  mlflow-up           Start Postgres + MLflow + MinIO (needs mlflow/.env)"
 	@echo "  mlflow-down         Stop MLflow stack"
-	@echo "  upload-datasets     Upload DATASET_SRC to MinIO (needs mlflow-up)"
-	@echo "  s3-ls-datasets      List uploaded dataset prefixes in MinIO"
+	@echo "  upload-datasets     Upload DATASET_SRC to MinIO via dev image (needs build + mlflow-up)"
+	@echo "  s3-ls-datasets      List dataset prefixes in MinIO (dev image)"
 	@echo "  train-final         Train + log to MLflow + promote PRD"
 	@echo "  predict-prd         Load models:/chronos_1h_prd@prd and predict"
 	@echo ""
@@ -184,31 +196,38 @@ minio-check-running:
 	@docker ps --format '{{.Names}}' | grep -qx chronos_minio || \
 	  (echo "MinIO is not running. Run: make mlflow-up" && exit 1)
 
+docker-image-check:
+	@docker image inspect $(IMAGE) >/dev/null 2>&1 || \
+	  (echo "Docker image $(IMAGE) not found. Run: make build" && exit 1)
+
 mlflow-up: mlflow-check-env
 	cd $(MLFLOW_DIR) && docker compose up -d
 
 mlflow-down:
 	cd $(MLFLOW_DIR) && docker compose down
 
-# Upload local datasets to MinIO via boto3 (localhost:9000). Requires: mlflow-up, boto3.
+# Upload local datasets to MinIO (dev image on mlflow_internal → http://minio:9000).
 # Override: make upload-datasets DATASET_TAG=v2 DATASET_SRC=outputs/datasets
-upload-datasets: mlflow-check-env minio-check-running
-	$(PYTHON) scripts/upload_datasets_s3.py \
+upload-datasets: mlflow-check-env minio-check-running docker-image-check
+	@test -d "$(DATASET_SRC)" || (echo "DATASET_SRC not found: $(DATASET_SRC)" && exit 1)
+	$(DOCKER_RUN_MLFLOW) $(IMAGE) python scripts/upload_datasets_s3.py \
 	  --src "$(DATASET_SRC)" --tag "$(DATASET_TAG)" --prefix "$(S3_DATASET_PREFIX)"
 
-s3-ls-datasets: mlflow-check-env minio-check-running
-	$(PYTHON) scripts/upload_datasets_s3.py --list --prefix "$(S3_DATASET_PREFIX)"
+s3-ls-datasets: mlflow-check-env minio-check-running docker-image-check
+	$(DOCKER_RUN_MLFLOW) $(IMAGE) python scripts/upload_datasets_s3.py \
+	  --list --prefix "$(S3_DATASET_PREFIX)"
 
 # ------- MLflow-integrated training (T2-P2 bonus) -------
 # Train final model and promote to PRD (requires mlflow-up)
-train-final:
-	$(DOCKER_RUN_BASE) --network mlflow_internal $(IMAGE) sh -c \
-	  "cd $(WORKDIR_ABS) && PYTHONPATH=$(WORKDIR_ABS) python scripts/train_mlflow.py experiment=final mlflow.promote_to_prd=true mlflow.tracking_uri=http://chronos_mlflow:5000"
+train-final: mlflow-check-env minio-check-running docker-image-check
+	$(DOCKER_RUN_MLFLOW) -e MLFLOW_TRACKING_URI=http://chronos_mlflow:5000 $(IMAGE) \
+	  python scripts/train_mlflow.py experiment=final mlflow.promote_to_prd=true \
+	  mlflow.tracking_uri=http://chronos_mlflow:5000
 
 # Load PRD model and predict (requires mlflow-up + trained PRD)
-predict-prd:
-	$(DOCKER_RUN_BASE) --network mlflow_internal $(IMAGE) sh -c \
-	  "cd $(WORKDIR_ABS) && PYTHONPATH=$(WORKDIR_ABS) python scripts/predict_prd.py mlflow.tracking_uri=http://chronos_mlflow:5000"
+predict-prd: mlflow-check-env minio-check-running docker-image-check
+	$(DOCKER_RUN_MLFLOW) -e MLFLOW_TRACKING_URI=http://chronos_mlflow:5000 $(IMAGE) \
+	  python scripts/predict_prd.py mlflow.tracking_uri=http://chronos_mlflow:5000
 
 # Train token transformer (no MLflow required)
 token-transformer:
