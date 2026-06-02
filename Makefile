@@ -20,6 +20,15 @@ GID := $(shell id -g 2>/dev/null || echo 1000)
 # Absolute working directory on host (the dir you call `make` from)
 WORKDIR_ABS := $(shell pwd)
 
+# MinIO / dataset upload (see targets upload-datasets, s3-ls-datasets)
+MLFLOW_DIR          ?= mlflow
+MLFLOW_ENV          := $(MLFLOW_DIR)/.env
+MLFLOW_NETWORK      ?= mlflow_internal
+MINIO_MC_IMAGE      ?= quay.io/minio/mc
+DATASET_SRC         ?= outputs/datasets
+DATASET_TAG         ?= $(shell date +%Y%m%d)
+S3_DATASET_PREFIX   ?= chronos/datasets
+
 # GPU flags (no-op if GPU is empty or "none")
 ifeq ($(GPU),)
   DOCKER_GPU_FLAGS :=
@@ -57,7 +66,8 @@ DOCKER_RUN_BASE = docker run --rm -it --name $(CONTAINER) \
 # ------- Targets -------
 .PHONY: help build rebuild bash start exec attach stop rm logs jupyter jupyter-secure prune cuda-check nvidia-smi \
         build-clf-dataset train-clf train-clf-sweep \
-        mlflow-up mlflow-down train-final predict-prd token-transformer
+        mlflow-up mlflow-down mlflow-check-env minio-check-running \
+        upload-datasets s3-ls-datasets train-final predict-prd token-transformer
 
 help:
 	@echo "Targets:"
@@ -75,6 +85,14 @@ help:
 	@echo "  cuda-check      Verify nvidia-smi + torch sees CUDA"
 	@echo "  nvidia-smi      Run nvidia-smi inside the container"
 	@echo "  prune           Remove dangling images/volumes"
+	@echo ""
+	@echo "MLflow / S3 (MinIO):"
+	@echo "  mlflow-up           Start Postgres + MLflow + MinIO (needs mlflow/.env)"
+	@echo "  mlflow-down         Stop MLflow stack"
+	@echo "  upload-datasets     Upload DATASET_SRC to MinIO (needs mlflow-up)"
+	@echo "  s3-ls-datasets      List uploaded dataset prefixes in MinIO"
+	@echo "  train-final         Train + log to MLflow + promote PRD"
+	@echo "  predict-prd         Load models:/chronos_1h_prd@prd and predict"
 	@echo ""
 	@echo "Config examples:"
 	@echo "  make bash GPU=all"
@@ -159,11 +177,45 @@ train-clf-sweep:
 	$(DOCKER_RUN_BASE) $(IMAGE) sh -c "cd $(WORKDIR_ABS) && PYTHONPATH=$(WORKDIR_ABS) python scripts/train_classifier.py -m label=direction,large_move,vol_regime,horizon_dir,return_token model=logreg,catboost,lightgbm"
 
 # ------- MLflow stack -------
-mlflow-up:
-	cd mlflow && docker compose up -d
+mlflow-check-env:
+	@test -f $(MLFLOW_ENV) || (echo "Missing $(MLFLOW_ENV) — run: cp $(MLFLOW_DIR)/.env.example $(MLFLOW_ENV)" && exit 1)
+
+minio-check-running:
+	@docker ps --format '{{.Names}}' | grep -qx chronos_minio || \
+	  (echo "MinIO is not running. Run: make mlflow-up" && exit 1)
+
+mlflow-up: mlflow-check-env
+	cd $(MLFLOW_DIR) && docker compose up -d
 
 mlflow-down:
-	cd mlflow && docker compose down
+	cd $(MLFLOW_DIR) && docker compose down
+
+# Upload local datasets to MinIO (no host AWS CLI / exports needed).
+# Uses a one-off mc container on the compose network with DATASET_SRC bind-mounted.
+# Override: make upload-datasets DATASET_TAG=v2 DATASET_SRC=outputs/datasets
+upload-datasets: mlflow-check-env minio-check-running
+	@test -d "$(DATASET_SRC)" || (echo "DATASET_SRC not found: $(DATASET_SRC)" && exit 1)
+	@echo "Uploading $(WORKDIR_ABS)/$(DATASET_SRC)/"
+	@echo "  -> s3://<bucket>/$(S3_DATASET_PREFIX)/$(DATASET_TAG)/  (bucket from $(MLFLOW_ENV))"
+	docker run --rm \
+	  --network $(MLFLOW_NETWORK) \
+	  --env-file $(MLFLOW_ENV) \
+	  -v "$(WORKDIR_ABS)/$(DATASET_SRC):/data:ro" \
+	  $(MINIO_MC_IMAGE) \
+	  sh -c 'set -e; \
+	    mc alias set chronos http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"; \
+	    mc mb --ignore-existing "chronos/$$DEFAULT_BUCKET_NAME"; \
+	    mc cp --recursive /data/ "chronos/$$DEFAULT_BUCKET_NAME/$(S3_DATASET_PREFIX)/$(DATASET_TAG)/"; \
+	    echo "Done. Objects:"; \
+	    mc ls "chronos/$$DEFAULT_BUCKET_NAME/$(S3_DATASET_PREFIX)/$(DATASET_TAG)/"'
+
+s3-ls-datasets: mlflow-check-env minio-check-running
+	docker run --rm \
+	  --network $(MLFLOW_NETWORK) \
+	  --env-file $(MLFLOW_ENV) \
+	  $(MINIO_MC_IMAGE) \
+	  sh -c 'mc alias set chronos http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"; \
+	    mc ls --recursive "chronos/$$DEFAULT_BUCKET_NAME/$(S3_DATASET_PREFIX)/" || true'
 
 # ------- MLflow-integrated training (T2-P2 bonus) -------
 # Train final model and promote to PRD (requires mlflow-up)
