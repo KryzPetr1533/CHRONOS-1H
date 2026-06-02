@@ -20,14 +20,14 @@ GID := $(shell id -g 2>/dev/null || echo 1000)
 # Absolute working directory on host (the dir you call `make` from)
 WORKDIR_ABS := $(shell pwd)
 
-# MinIO / dataset upload (see targets upload-datasets, s3-ls-datasets)
+# MinIO / dataset upload (scripts/upload_datasets_s3.py)
 MLFLOW_DIR          ?= mlflow
 MLFLOW_ENV          := $(MLFLOW_DIR)/.env
 MLFLOW_NETWORK      ?= mlflow_internal
-MINIO_MC_IMAGE      ?= quay.io/minio/mc
 DATASET_SRC         ?= outputs/datasets
 DATASET_TAG         ?= $(shell date +%Y%m%d)
 S3_DATASET_PREFIX   ?= chronos/datasets
+PYTHON              ?= python3
 
 # GPU flags (no-op if GPU is empty or "none")
 ifeq ($(GPU),)
@@ -190,32 +190,14 @@ mlflow-up: mlflow-check-env
 mlflow-down:
 	cd $(MLFLOW_DIR) && docker compose down
 
-# Upload local datasets to MinIO (no host AWS CLI / exports needed).
-# Uses a one-off mc container on the compose network with DATASET_SRC bind-mounted.
+# Upload local datasets to MinIO via boto3 (localhost:9000). Requires: mlflow-up, boto3.
 # Override: make upload-datasets DATASET_TAG=v2 DATASET_SRC=outputs/datasets
 upload-datasets: mlflow-check-env minio-check-running
-	@test -d "$(DATASET_SRC)" || (echo "DATASET_SRC not found: $(DATASET_SRC)" && exit 1)
-	@echo "Uploading $(WORKDIR_ABS)/$(DATASET_SRC)/"
-	@echo "  -> s3://<bucket>/$(S3_DATASET_PREFIX)/$(DATASET_TAG)/  (bucket from $(MLFLOW_ENV))"
-	docker run --rm \
-	  --network $(MLFLOW_NETWORK) \
-	  --env-file $(MLFLOW_ENV) \
-	  -v "$(WORKDIR_ABS)/$(DATASET_SRC):/data:ro" \
-	  $(MINIO_MC_IMAGE) \
-	  sh -c 'set -e; \
-	    mc alias set chronos http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"; \
-	    mc mb --ignore-existing "chronos/$$DEFAULT_BUCKET_NAME"; \
-	    mc cp --recursive /data/ "chronos/$$DEFAULT_BUCKET_NAME/$(S3_DATASET_PREFIX)/$(DATASET_TAG)/"; \
-	    echo "Done. Objects:"; \
-	    mc ls "chronos/$$DEFAULT_BUCKET_NAME/$(S3_DATASET_PREFIX)/$(DATASET_TAG)/"'
+	$(PYTHON) scripts/upload_datasets_s3.py \
+	  --src "$(DATASET_SRC)" --tag "$(DATASET_TAG)" --prefix "$(S3_DATASET_PREFIX)"
 
 s3-ls-datasets: mlflow-check-env minio-check-running
-	docker run --rm \
-	  --network $(MLFLOW_NETWORK) \
-	  --env-file $(MLFLOW_ENV) \
-	  $(MINIO_MC_IMAGE) \
-	  sh -c 'mc alias set chronos http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"; \
-	    mc ls --recursive "chronos/$$DEFAULT_BUCKET_NAME/$(S3_DATASET_PREFIX)/" || true'
+	$(PYTHON) scripts/upload_datasets_s3.py --list --prefix "$(S3_DATASET_PREFIX)"
 
 # ------- MLflow-integrated training (T2-P2 bonus) -------
 # Train final model and promote to PRD (requires mlflow-up)
