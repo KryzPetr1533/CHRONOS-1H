@@ -99,6 +99,76 @@ ssh -L 5050:localhost:5050 -L 9001:localhost:9001 user@host
 
 Detailed task plans (local, gitignored): `plans/README.md`.
 
+### Legacy setup: neural networks (next-hour **return** regression)
+
+The **original** task predicted `target_log_ret_1h` (continuous). Tree and neural models are in `legacy/`; active entry points:
+
+| Step | Command | Notes |
+|------|---------|--------|
+| Build datasets | `make build-regression-datasets` | `btcusdt_core_tabular.csv` + `btcusdt_core_seq_small.csv` |
+| GRU/LSTM (full) | `make train-seq` | 4 configs, ~25 epochs each; uses PyTorch |
+| Quick smoke | `make train-seq-smoke` | 1 GRU, 5 epochs |
+| + MLflow | `make train-seq-smoke-mlflow` | Needs `make mlflow-up`; experiment `chronos-1h-regression-seq` |
+| Tabular Ridge | `make train-ridge-core` | sklearn pipeline via `train_model.py` |
+| TimeXer | `make train-timexer` | Heavy (PyTorch Forecasting) |
+| Chronos-2 | `make train-chronos2` | AutoGluon; needs `chronos2_panel.csv` |
+
+Artifacts: `outputs/models/seq_core_small/` (`seq_metrics.json`, `seq_test_predictions.csv`).
+
+On Linux with NVIDIA: `make train-seq GPU=all`. Compare runs in MLflow UI (http://localhost:5050) under experiment **chronos-1h-regression-seq**.
+
+Direct CLI:
+
+```bash
+python scripts/train_seq.py --quick --epochs 5 --mlflow \
+  --mlflow-tracking-uri http://localhost:5050
+```
+
+### Unified experiments (OOP + MLflow)
+
+All trainers share one pattern: subclass `BaseExperiment`, implement `fit()`, call `run(mlflow=MLflowConfig(...))`.
+
+| Piece | Path |
+|-------|------|
+| Base class | `chronos_ts/experiments/base.py` |
+| Registry | `chronos_ts/experiments/registry.py` |
+| CLI | `scripts/train_experiment.py` |
+
+Registered names: `classification`, `seq`, `ridge`, `catboost_reg`, `timexer`, `patchtst`, `chronos2`, `har_vol`, `garch`.
+
+```bash
+# Classification still uses Hydra (wraps ClassificationExperiment internally)
+make train-final
+
+# Legacy regression with MLflow
+make mlflow-up
+make build-regression-datasets
+make train-experiment EXPERIMENT=seq EXPERIMENT_QUICK=1    # GRU smoke
+make train-experiment EXPERIMENT=ridge                   # Ridge tabular
+make train-legacy-mlflow-smoke                             # seq + ridge
+
+# Or directly
+python scripts/train_experiment.py seq --quick --epochs 5 \
+  --tracking-uri http://localhost:5050
+```
+
+Extend with a new experiment:
+
+```python
+from chronos_ts.experiments.base import BaseExperiment
+from chronos_ts.experiments.types import ExperimentResult, MLflowConfig
+
+class MyExperiment(BaseExperiment):
+    name = "my_model"
+    default_mlflow_experiment = "chronos-1h-my-model"
+
+    def fit(self, **kwargs) -> ExperimentResult:
+        ...
+        return ExperimentResult(kind="regression", name=self.name, ...)
+
+MyExperiment().run(mlflow=MLflowConfig(experiment_name="chronos-1h-my-model"))
+```
+
 ---
 
 ## 2. Data sources used

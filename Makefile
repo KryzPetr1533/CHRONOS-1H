@@ -87,6 +87,9 @@ DOCKER_RUN_BASE = $(DOCKER_RUN) -it --name $(CONTAINER) \
 # ------- Targets -------
 .PHONY: help build rebuild bash start exec attach stop rm logs jupyter jupyter-secure prune cuda-check nvidia-smi \
         build-clf-dataset eda-clf-dataset train-clf train-clf-sweep train-sweep report-leaderboard \
+        build-regression-datasets train-seq train-seq-smoke train-seq-mlflow train-seq-smoke-mlflow \
+        train-experiment train-experiment-smoke train-legacy-mlflow-smoke \
+        train-ridge-core train-ridge-mlflow train-timexer train-chronos2 \
         mlflow-up mlflow-down mlflow-check-env minio-check-running docker-image-check \
         upload-datasets s3-ls-datasets train-final train-smoke register-prd predict-prd token-transformer
 
@@ -116,6 +119,19 @@ help:
 	@echo "  train-smoke         Quick MLflow train (logreg, rich data) to verify stack"
 	@echo "                      Colima: colima start --memory 8  (train-final needs more RAM)"
 	@echo "  predict-prd         Load models:/chronos_1h_prd@prd and predict"
+	@echo ""
+	@echo "Legacy regression / neural nets (next-hour return):"
+	@echo "  build-regression-datasets  core tabular + seq/mean/vol compact CSVs"
+	@echo "  train-experiment      Unified OOP runner + MLflow (EXPERIMENT=seq|ridge|...)"
+	@echo "  train-experiment-smoke  EXPERIMENT=seq --quick (5 epochs)"
+	@echo "  train-legacy-mlflow-smoke  seq + ridge smoke with MLflow"
+	@echo "  train-seq             GRU/LSTM grid on btcusdt_core_seq_small.csv"
+	@echo "  train-seq-smoke       Quick seq train (5 epochs, single GRU)"
+	@echo "  train-seq-mlflow      Same + MLflow experiment chronos-1h-regression-seq"
+	@echo "  train-ridge-core      Tabular Ridge baseline"
+	@echo "  train-ridge-mlflow    Ridge + MLflow via train_experiment.py"
+	@echo "  train-timexer         TimeXer (slow)"
+	@echo "  train-chronos2        AutoGluon Chronos-2 panel"
 	@echo ""
 	@echo "Config examples:"
 	@echo "  make bash GPU=all"
@@ -276,3 +292,68 @@ predict-prd: mlflow-check-env minio-check-running docker-image-check
 # Train token transformer (no MLflow required)
 token-transformer:
 	$(DOCKER_RUN) $(IMAGE) python scripts/train_token_transformer.py
+
+# ------- Legacy regression / neural networks (next-hour return) -------
+# Build tabular + compact seq/mean/vol CSVs from merged 1h data
+build-regression-datasets:
+	$(DOCKER_RUN) $(IMAGE) python scripts/build_dataset.py --config configs/build_core.yaml
+	$(DOCKER_RUN) $(IMAGE) python scripts/build_compact_datasets.py
+
+SEQ_DATA_CSV  ?= outputs/datasets/btcusdt_core_seq_small.csv
+SEQ_OUT_DIR   ?= outputs/models/seq_core_small
+SEQ_EPOCHS    ?= 25
+SEQ_QUICK     ?= 0
+
+# GRU/LSTM grid search on sequence dataset (CPU ok; use GPU=all on Linux if available)
+train-seq:
+	$(DOCKER_RUN) $(IMAGE) python scripts/train_seq.py \
+	  --data-csv $(SEQ_DATA_CSV) --out-dir $(SEQ_OUT_DIR) --epochs $(SEQ_EPOCHS) \
+	  $(if $(filter 1 true yes,$(SEQ_QUICK)),--quick,)
+
+train-seq-full: build-regression-datasets train-seq
+
+train-seq-smoke:
+	$(MAKE) train-seq SEQ_EPOCHS=5 SEQ_QUICK=1
+
+train-seq-mlflow: mlflow-check-env minio-check-running docker-image-check
+	$(DOCKER_RUN_MLFLOW) -e MLFLOW_TRACKING_URI=http://chronos_mlflow:5000 $(IMAGE) \
+	  python scripts/train_seq.py --data-csv $(SEQ_DATA_CSV) --out-dir $(SEQ_OUT_DIR) \
+	  --epochs $(SEQ_EPOCHS) $(if $(filter 1 true yes,$(SEQ_QUICK)),--quick,) \
+	  --mlflow --mlflow-experiment chronos-1h-regression-seq \
+	  --mlflow-tracking-uri http://chronos_mlflow:5000
+
+train-seq-smoke-mlflow:
+	$(MAKE) train-seq-mlflow SEQ_EPOCHS=5 SEQ_QUICK=1
+
+# Unified OOP experiment runner (chronos_ts.experiments)
+EXPERIMENT ?= seq
+EXPERIMENT_EPOCHS ?= 5
+EXPERIMENT_QUICK ?= 0
+
+train-experiment: mlflow-check-env minio-check-running docker-image-check
+	$(DOCKER_RUN_MLFLOW) -e MLFLOW_TRACKING_URI=http://chronos_mlflow:5000 $(IMAGE) \
+	  python scripts/train_experiment.py $(EXPERIMENT) \
+	  --tracking-uri http://chronos_mlflow:5000 \
+	  --epochs $(EXPERIMENT_EPOCHS) \
+	  $(if $(filter 1 true yes,$(EXPERIMENT_QUICK)),--quick,)
+
+train-experiment-smoke:
+	$(MAKE) train-experiment EXPERIMENT=$(EXPERIMENT) EXPERIMENT_EPOCHS=5 EXPERIMENT_QUICK=1
+
+train-legacy-mlflow-smoke: build-regression-datasets
+	$(MAKE) train-experiment EXPERIMENT=seq EXPERIMENT_QUICK=1
+	$(MAKE) train-experiment EXPERIMENT=ridge
+
+train-ridge-mlflow: mlflow-check-env minio-check-running docker-image-check
+	$(MAKE) train-experiment EXPERIMENT=ridge
+
+# Tabular Ridge/CatBoost on next-hour return (configs in configs/ or legacy/)
+train-ridge-core:
+	$(DOCKER_RUN) $(IMAGE) python scripts/train_model.py --config legacy/regression_mean/configs/train_ridge_core.yaml
+
+# TimeXer / Chronos-2 (heavy; long runtime)
+train-timexer:
+	$(DOCKER_RUN) $(IMAGE) python legacy/regression_seq/scripts/train_timexer.py
+
+train-chronos2:
+	$(DOCKER_RUN) $(IMAGE) python scripts/train_chronos2.py

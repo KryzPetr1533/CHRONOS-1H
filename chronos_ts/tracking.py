@@ -52,6 +52,35 @@ def configure_mlflow(tracking_uri: str='http://localhost:5050', experiment_name:
     print(f'S3 endpoint: {s3_endpoint_url}')
     return exp.experiment_id
 
+def log_regression_run(result: dict[str, Any], run_name: str, artifact_dir: Path | str, extra_params: Optional[dict[str, Any]]=None, artifact_names: Optional[tuple[str, ...]]=None) -> Optional[str]:
+    mlflow = _mlflow()
+    from chronos_ts.mlflow_params import safe_log_params
+    params = {'data_csv': result.get('data_csv', ''), 'seed': result.get('seed', 42)}
+    if extra_params:
+        params.update({k: v for k, v in extra_params.items()})
+    art = Path(artifact_dir)
+    with mlflow.start_run(run_name=run_name):
+        safe_log_params(params)
+        for split in ('val', 'test'):
+            for src, prefix in (('model', ''), ('baseline', 'baseline_')):
+                m = result.get(src, {}).get(split, {})
+                if isinstance(m, dict):
+                    _log_metric_dict({split: m}, prefix_split=False, name_prefix=f'{prefix}{split}_')
+        logged: set[str] = set()
+        for name in artifact_names or ():
+            p = art / name
+            if p.is_file() and name not in logged:
+                mlflow.log_artifact(str(p))
+                logged.add(name)
+        for name in ('seq_metrics.json', 'seq_search_results.csv', 'seq_test_predictions.csv'):
+            p = art / name
+            if p.is_file() and name not in logged:
+                mlflow.log_artifact(str(p), 'seq')
+                logged.add(name)
+        run_id = mlflow.active_run().info.run_id
+    print(f'\nMLflow run_id: {run_id}')
+    return run_id
+
 def set_global_seed(seed: int=42) -> None:
     random.seed(seed)
     np.random.seed(seed)
