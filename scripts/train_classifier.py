@@ -40,7 +40,7 @@ class ClassifierRunner:
     def from_defaults(cls, label_family: str='vol_regime', model_name: str='catboost', data_csv: str='outputs/datasets/btcusdt_clf_core.csv', **kwargs: Any) -> 'ClassifierRunner':
         return cls(RunConfig(data_csv=data_csv, label_family=label_family, model_name=model_name, **kwargs))
 
-    def run(self, mlflow_experiment: Optional[str]=None, register_as: Optional[str]=None, promote_to_prd: bool=False) -> dict[str, Any]:
+    def run(self, mlflow_experiment: Optional[str]=None, register_as: Optional[str]=None, promote_to_prd: bool=False, hydra_cfg: Any=None) -> dict[str, Any]:
         from chronos_ts.labels import LabelConfig
         from chronos_ts.splits import TimeRangeSplitConfig
         from chronos_ts.classification import ClassificationConfig, ClassificationTrainer
@@ -54,13 +54,14 @@ class ClassifierRunner:
         result = trainer.run()
         self._print_summary(result)
         if mlflow_experiment:
-            self._log_to_mlflow(result, train_cfg, mlflow_experiment, register_as, promote_to_prd)
+            self._log_to_mlflow(result, train_cfg, mlflow_experiment, register_as, promote_to_prd, hydra_cfg=hydra_cfg)
         return result
 
-    def _log_to_mlflow(self, result, train_cfg, experiment_name, register_as, promote_to_prd):
+    def _log_to_mlflow(self, result, train_cfg, experiment_name, register_as, promote_to_prd, hydra_cfg=None):
         try:
-            import mlflow
+            from chronos_ts.mlflow_client import get_mlflow
             from chronos_ts.tracking import log_classification_run
+            mlflow = get_mlflow()
             from chronos_ts.labels import LabelMaker
             import pandas as pd
             mlflow.set_experiment(experiment_name)
@@ -80,7 +81,7 @@ class ClassifierRunner:
             model_path = Path(train_cfg.output_dir) / f'{self.cfg.model_name}_{self.cfg.label_family}_model.joblib'
             model = joblib.load(model_path)
             with mlflow.start_run(run_name=run_name):
-                version = log_classification_run(result=result, model=model, X_test=X_test, label_maker=label_maker, run_cfg=self.cfg, register_as=register_as, promote_to_prd=promote_to_prd)
+                version = log_classification_run(result=result, model=model, X_test=X_test, label_maker=label_maker, run_cfg=self.cfg, register_as=register_as, promote_to_prd=promote_to_prd, hydra_cfg=hydra_cfg)
                 run_id = mlflow.active_run().info.run_id
             print(f'\nMLflow run_id: {run_id}')
             if version:

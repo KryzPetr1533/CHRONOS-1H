@@ -23,10 +23,11 @@ def main() -> int:
     parser.add_argument('--s3-endpoint', default='http://localhost:9000')
     args = parser.parse_args()
 
+    from chronos_ts.mlflow_client import get_mlflow
     from chronos_ts.tracking import configure_mlflow, _log_model_artifact, _set_prd_alias
-    import mlflow
     import pandas as pd
     from mlflow.models import infer_signature
+    mlflow = get_mlflow()
 
     configure_mlflow(
         tracking_uri=args.tracking_uri,

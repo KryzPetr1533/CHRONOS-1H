@@ -7,13 +7,13 @@ import boto3
 from botocore.exceptions import ClientError
 from dotenv import dotenv_values
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_ENV_FILE = REPO_ROOT / 'mlflow' / '.env'
+DEFAULT_ENV_FILE = REPO_ROOT / 'infra' / 'mlflow' / '.env'
 DEFAULT_SRC = REPO_ROOT / 'outputs' / 'datasets'
 DEFAULT_PREFIX = 'chronos/datasets'
 
 def load_config(env_file: Path) -> dict[str, str]:
     if not env_file.is_file():
-        raise FileNotFoundError(f'Missing {env_file}. Run: cp mlflow/.env.example mlflow/.env')
+        raise FileNotFoundError(f'Missing {env_file}. Run: cp infra/mlflow/.env.example infra/mlflow/.env')
     raw = dotenv_values(env_file)
     cfg = {k: v for k, v in raw.items() if v is not None}
     for key in ('MINIO_ROOT_USER', 'MINIO_ROOT_PASSWORD', 'DEFAULT_BUCKET_NAME'):

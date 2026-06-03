@@ -44,9 +44,10 @@ class TrainWithMLflow:
         run_cfg = _build_run_config_from_hydra(cfg)
         run_cfg.output_dir = str(project_root / cfg.output_base)
         register_as = ml.registered_model_name if ml.promote_to_prd else None
-        result = ClassifierRunner(run_cfg).run(mlflow_experiment=ml.experiment_name, register_as=register_as, promote_to_prd=bool(ml.promote_to_prd))
+        result = ClassifierRunner(run_cfg).run(mlflow_experiment=ml.experiment_name, register_as=register_as, promote_to_prd=bool(ml.promote_to_prd), hydra_cfg=cfg)
         try:
-            import mlflow
+            from chronos_ts.mlflow_client import get_mlflow
+            mlflow = get_mlflow()
             hydra_cfg_path = Path(hydra.core.hydra_config.HydraConfig.get().runtime.output_dir) / '.hydra'
             if hydra_cfg_path.exists() and result.get('mlflow_run_id'):
                 with mlflow.start_run(run_id=result['mlflow_run_id']):

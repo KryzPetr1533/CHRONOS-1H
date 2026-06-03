@@ -23,9 +23,10 @@ class PrdPredictor:
         self._model = None
 
     def load(self) -> None:
+        from chronos_ts.mlflow_client import get_mlflow
         from chronos_ts.tracking import configure_mlflow
-        import mlflow
         configure_mlflow(tracking_uri=self.cfg.tracking_uri, experiment_name='chronos-1h-classification', s3_endpoint_url=self.cfg.s3_endpoint_url, aws_access_key_id=self.cfg.aws_access_key_id, aws_secret_access_key=self.cfg.aws_secret_access_key)
+        mlflow = get_mlflow()
         uri = f'models:/{self.cfg.registered_model_name}@prd'
         print(f'Loading {uri} ...')
         self._model = mlflow.pyfunc.load_model(uri)

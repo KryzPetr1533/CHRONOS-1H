@@ -24,7 +24,7 @@ WORKDIR_ABS := $(shell pwd)
 DOCKER_COMPOSE      ?= $(shell if command -v docker-compose >/dev/null 2>&1; then echo docker-compose; else echo "docker compose"; fi)
 
 # MinIO / dataset upload (scripts/upload_datasets_s3.py)
-MLFLOW_DIR          ?= mlflow
+MLFLOW_DIR          ?= infra/mlflow
 MLFLOW_ENV          := $(MLFLOW_DIR)/.env
 MLFLOW_NETWORK      ?= mlflow_internal
 DATASET_SRC         ?= outputs/datasets
@@ -106,7 +106,7 @@ help:
 	@echo "  prune           Remove dangling images/volumes"
 	@echo ""
 	@echo "MLflow / S3 (MinIO):"
-	@echo "  mlflow-up           Start Postgres + MLflow + MinIO (needs mlflow/.env)"
+	@echo "  mlflow-up           Start Postgres + MLflow + MinIO (needs infra/mlflow/.env)"
 	@echo "  mlflow-down         Stop MLflow stack"
 	@echo "  upload-datasets     Upload DATASET_SRC to MinIO via dev image (needs build + mlflow-up)"
 	@echo "  s3-ls-datasets      List dataset prefixes in MinIO (dev image)"
@@ -200,6 +200,9 @@ train-clf-sweep:
 # ------- MLflow stack -------
 mlflow-check-env:
 	@test -f $(MLFLOW_ENV) || (echo "Missing $(MLFLOW_ENV) — run: cp $(MLFLOW_DIR)/.env.example $(MLFLOW_ENV)" && exit 1)
+	@if [ -d mlflow ] && [ -f mlflow/docker-compose.yml ] 2>/dev/null; then \
+	  echo "WARNING: ./mlflow/ shadows pip mlflow when PYTHONPATH includes the repo. Migrate: cp mlflow/.env infra/mlflow/.env && rm -rf mlflow"; \
+	fi
 
 minio-check-running:
 	@docker ps --format '{{.Names}}' | grep -qx chronos_minio || \
