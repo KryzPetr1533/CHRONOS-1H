@@ -88,7 +88,7 @@ DOCKER_RUN_BASE = $(DOCKER_RUN) -it --name $(CONTAINER) \
 .PHONY: help build rebuild bash start exec attach stop rm logs jupyter jupyter-secure prune cuda-check nvidia-smi \
         build-clf-dataset eda-clf-dataset train-clf train-clf-sweep train-sweep report-leaderboard \
         build-regression-datasets train-seq train-seq-smoke train-seq-mlflow train-seq-smoke-mlflow \
-        train-experiment train-experiment-smoke train-legacy-mlflow-smoke \
+        train-experiment train-experiment-smoke train-legacy-mlflow-smoke mlflow-backfill mlflow-backfill-all \
         train-ridge-core train-ridge-mlflow train-timexer train-chronos2 \
         mlflow-up mlflow-down mlflow-check-env minio-check-running docker-image-check \
         upload-datasets s3-ls-datasets train-final train-smoke register-prd predict-prd token-transformer
@@ -125,6 +125,8 @@ help:
 	@echo "  train-experiment      Unified OOP runner + MLflow (EXPERIMENT=seq|ridge|...)"
 	@echo "  train-experiment-smoke  EXPERIMENT=seq --quick (5 epochs)"
 	@echo "  train-legacy-mlflow-smoke  seq + ridge smoke with MLflow"
+	@echo "  mlflow-backfill       Log existing outputs/models/* metrics to MLflow (no retrain)"
+	@echo "  mlflow-backfill-all   Backfill seq,ridge,catboost,har,garch,timexer,chronos2"
 	@echo "  train-seq             GRU/LSTM grid on btcusdt_core_seq_small.csv"
 	@echo "  train-seq-smoke       Quick seq train (5 epochs, single GRU)"
 	@echo "  train-seq-mlflow      Same + MLflow experiment chronos-1h-regression-seq"
@@ -245,6 +247,9 @@ minio-check-running:
 docker-image-check:
 	@docker image inspect $(IMAGE) >/dev/null 2>&1 || \
 	  (echo "Docker image $(IMAGE) not found. Run: make build" && exit 1)
+	@docker run --rm $(IMAGE) python -c "import mlflow; print('mlflow', mlflow.__version__)" >/dev/null 2>&1 || \
+	  (echo "Image $(IMAGE) is missing the mlflow Python package (training works, logging does not)." && \
+	   echo "Rebuild: make rebuild   (or: make build after git pull)" && exit 1)
 
 mlflow-up: mlflow-check-env
 	cd $(MLFLOW_DIR) && $(DOCKER_COMPOSE) up -d
@@ -343,6 +348,16 @@ train-experiment-smoke:
 train-legacy-mlflow-smoke: build-regression-datasets
 	$(MAKE) train-experiment EXPERIMENT=seq EXPERIMENT_QUICK=1
 	$(MAKE) train-experiment EXPERIMENT=ridge
+
+mlflow-backfill: mlflow-check-env minio-check-running docker-image-check
+	@test -n "$(EXPERIMENT)" || (echo "Usage: make mlflow-backfill EXPERIMENT=seq|ridge|..." && exit 1)
+	$(DOCKER_RUN_MLFLOW) -e MLFLOW_TRACKING_URI=http://chronos_mlflow:5000 $(IMAGE) \
+	  python scripts/mlflow_backfill.py $(EXPERIMENT) \
+	  --tracking-uri http://chronos_mlflow:5000
+
+mlflow-backfill-all: mlflow-check-env minio-check-running docker-image-check
+	$(DOCKER_RUN_MLFLOW) -e MLFLOW_TRACKING_URI=http://chronos_mlflow:5000 $(IMAGE) \
+	  python scripts/mlflow_backfill.py --all --tracking-uri http://chronos_mlflow:5000
 
 train-ridge-mlflow: mlflow-check-env minio-check-running docker-image-check
 	$(MAKE) train-experiment EXPERIMENT=ridge

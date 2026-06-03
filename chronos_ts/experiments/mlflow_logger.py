@@ -10,7 +10,15 @@ class MlflowLogger:
         self.config = config
 
     def log(self, result: ExperimentResult, run_name: Optional[str] = None, **kwargs: Any) -> str:
-        from chronos_ts.tracking import configure_mlflow, log_classification_run, log_hydra_config, log_regression_run
+        try:
+            from chronos_ts.tracking import configure_mlflow, log_classification_run, log_hydra_config, log_regression_run
+        except ModuleNotFoundError as exc:
+            if 'mlflow' in str(exc).lower():
+                raise ModuleNotFoundError(
+                    'Training finished but MLflow logging failed: mlflow is not installed. '
+                    'Rebuild the dev image (`make rebuild`) or pip install -r requirements.txt'
+                ) from exc
+            raise
         configure_mlflow(tracking_uri=self.config.tracking_uri, experiment_name=self.config.experiment_name, s3_endpoint_url=self.config.s3_endpoint_url, aws_access_key_id=self.config.aws_access_key_id, aws_secret_access_key=self.config.aws_secret_access_key)
         name = run_name or result.run_name
         if result.kind == 'classification':

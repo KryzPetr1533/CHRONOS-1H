@@ -23,7 +23,14 @@ def _purge_shadow_module() -> None:
 
 def get_mlflow():
     _purge_shadow_module()
-    import mlflow
+    try:
+        import mlflow
+    except ModuleNotFoundError as exc:
+        raise ModuleNotFoundError(
+            'Python package "mlflow" is not installed in this environment. '
+            'Docker: run `make rebuild` then retry. '
+            'Local venv: pip install -r requirements.txt'
+        ) from exc
     if not _is_real_mlflow(mlflow):
         shadow_hint = ''
         if (_REPO_ROOT / 'mlflow').is_dir():

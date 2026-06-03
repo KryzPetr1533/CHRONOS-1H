@@ -90,7 +90,23 @@ docker run --rm -e PYTHONPATH="$(pwd)" -v "$(pwd):$(pwd)" -w "$(pwd)" btcusdt-de
   python scripts/train_classifier.py label=large_move model=catboost
 ```
 
-### 7. Remote server (SSH)
+### 7. Troubleshooting MLflow
+
+| Symptom | Fix |
+|---------|-----|
+| `ModuleNotFoundError: No module named 'mlflow'` after training | Image built before `mlflow` was in `requirements.txt`. Run **`make rebuild`**, then retry or backfill. |
+| Training OK, UI empty | Same as above. Artifacts are under `outputs/models/`; push them to MLflow without retraining: **`make mlflow-backfill-all`** (after rebuild). |
+| `make train-experiment` fails immediately | **`make docker-image-check`** verifies `import mlflow` inside the image. |
+| UI URL | Host browser: **http://127.0.0.1:5050** (Compose maps `5050:5000`). Inside Docker training use `http://chronos_mlflow:5000`. |
+| `curl :5000` fails on host | Expected — use port **5050** on the host. |
+
+```bash
+make rebuild
+make mlflow-up
+make mlflow-backfill-all    # if models already trained locally
+```
+
+### 8. Remote server (SSH)
 
 ```bash
 ssh -L 5050:localhost:5050 -L 9001:localhost:9001 user@host

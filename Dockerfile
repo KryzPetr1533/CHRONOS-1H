@@ -38,7 +38,8 @@ RUN python -m pip install -U pip \
 
 # Install project deps + JupyterLab
 RUN python -m pip install --prefer-binary -r /tmp/requirements.txt \
-    && python -m pip install --prefer-binary jupyterlab
+    && python -m pip install --prefer-binary jupyterlab \
+    && python -c "import mlflow, boto3; print('mlflow', mlflow.__version__)"
 
 ENV PYTHONPATH="/workspace:${PYTHONPATH}"
 

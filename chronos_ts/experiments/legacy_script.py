@@ -24,9 +24,12 @@ class LegacyScriptExperiment(BaseExperiment):
             raise FileNotFoundError(self.script)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         subprocess.run([sys.executable, str(self.script)], cwd=str(REPO_ROOT), check=True)
+        return self.result_from_artifacts()
+
+    def result_from_artifacts(self, **kwargs: Any) -> ExperimentResult:
         metrics_path = self.output_dir / self.metrics_file
         if not metrics_path.is_file():
-            raise FileNotFoundError(f'Expected metrics at {metrics_path}')
+            raise FileNotFoundError(f'Expected metrics at {metrics_path} (train first or check output_dir)')
         payload = json.loads(metrics_path.read_text(encoding='utf-8'))
         run_name = self._run_name(payload)
         params: dict[str, Any] = {'script': str(self.script)}
@@ -35,8 +38,25 @@ class LegacyScriptExperiment(BaseExperiment):
             params.update(extra)
         elif extra:
             params['best_model'] = str(extra)
-        artifacts = tuple(p.name for p in self.output_dir.iterdir() if p.is_file() and (p.suffix in ('.json', '.csv')))
+        artifacts = tuple(p.name for p in self.output_dir.iterdir() if p.is_file() and p.suffix in ('.json', '.csv'))
         return ExperimentResult(kind='regression', name=self.name, run_name=run_name, data_csv=str(payload.get('data_csv', '')), output_dir=self.output_dir, payload=payload, params={k: str(v) for k, v in params.items()}, artifact_names=artifacts)
+
+    def log_from_disk(self, mlflow_cfg, run_name: str | None=None, **kwargs: Any) -> ExperimentResult:
+        from chronos_ts.experiments.mlflow_logger import MlflowLogger
+        from chronos_ts.tracking import set_global_seed
+        set_global_seed(mlflow_cfg.seed)
+        if self.name == 'chronos2':
+            result = self.result_from_artifacts()
+            logger = MlflowLogger(mlflow_cfg)
+            for model_name, metrics in result.payload.get('model_results', {}).items():
+                sub_payload = {'data_csv': result.payload.get('data_csv'), 'model': metrics['model'], 'baseline': metrics['baseline']}
+                sub = ExperimentResult(kind='regression', name=self.name, run_name=f'chronos2_{model_name}', data_csv=result.data_csv, output_dir=result.output_dir, payload=sub_payload, params={'model_name': model_name})
+                logger.log(sub, run_name=sub.run_name)
+            result.mlflow_run_id = 'multi'
+            return result
+        result = self.result_from_artifacts(**kwargs)
+        MlflowLogger(mlflow_cfg).log(result, run_name=run_name)
+        return result
 
     def _run_name(self, payload: dict) -> str:
         if self.model_key and self.model_key in payload:
