@@ -192,28 +192,45 @@ class ClassificationTrainer:
 
     def _compute_baselines(self, labeled, feature_cols, label_maker) -> dict:
         baselines: dict[str, Any] = {}
+        family = self.config.label.target_family
         y_train = labeled['train'][1].dropna().to_numpy(dtype=int)
+        n_classes = label_maker.n_classes()
         majority_class = int(np.bincount(y_train).argmax())
+        train_counts = np.bincount(y_train, minlength=n_classes).astype(float)
+        train_freq = train_counts / max(train_counts.sum(), 1.0)
         for split_name in ('val', 'test'):
             split_df, y_series = labeled[split_name]
             mask = y_series.notna()
             y = y_series[mask].to_numpy(dtype=int)
             n = len(y)
-            n_classes = label_maker.n_classes()
+            names = label_maker.class_names()
+            split_bl: dict[str, Any] = {}
             y_maj = np.full(n, majority_class, dtype=int)
-            proba_maj = np.zeros((n, n_classes), dtype=float)
-            proba_maj[:, majority_class] = 1.0
-            baselines[split_name] = {'majority_class': evaluate_classification(y, y_maj, proba_maj, class_names=label_maker.class_names())}
+            split_bl['majority_class'] = evaluate_classification(y, y_maj, _constant_proba(y_maj, n_classes), class_names=names)
+            y_lag1 = y_series.shift(1).loc[mask].fillna(majority_class).to_numpy(dtype=int)
+            split_bl['label_lag1'] = evaluate_classification(y, y_lag1, _constant_proba(y_lag1, n_classes), class_names=names)
+            if n_classes >= 3:
+                split_bl['prev_regime'] = split_bl['label_lag1']
             _ret_col = self.config.label.return_col
-            if _ret_col in split_df.columns and n_classes == 2:
+            if _ret_col in split_df.columns:
                 prev_ret = split_df.loc[mask, _ret_col].to_numpy(dtype=float)
-                y_persist = (prev_ret > 0).astype(int)
-                proba_persist = np.zeros((n, 2), dtype=float)
-                proba_persist[y_persist == 1, 1] = 0.9
-                proba_persist[y_persist == 0, 0] = 0.9
-                proba_persist[y_persist == 1, 0] = 0.1
-                proba_persist[y_persist == 0, 1] = 0.1
-                baselines[split_name]['persistence'] = evaluate_classification(y, y_persist, proba_persist, class_names=label_maker.class_names())
+                if n_classes == 2 and family in ('direction', 'horizon_dir'):
+                    y_persist = (prev_ret > 0).astype(int)
+                    split_bl['momentum_sign'] = evaluate_classification(y, y_persist, _constant_proba(y_persist, 2), class_names=names)
+                    y_up = np.ones(n, dtype=int)
+                    split_bl['always_up'] = evaluate_classification(y, y_up, _constant_proba(y_up, 2), class_names=names)
+                if family == 'large_move' and label_maker._edges is not None:
+                    tau = float(label_maker._edges[0])
+                    abs_ret = np.abs(prev_ret)
+                    y_prev_large = np.zeros(n, dtype=int)
+                    if n > 1:
+                        y_prev_large[1:] = (abs_ret[:-1] >= tau).astype(int)
+                    split_bl['prev_large_move'] = evaluate_classification(y, y_prev_large, _constant_proba(y_prev_large, 2), class_names=names)
+            if family == 'return_token':
+                rng = np.random.default_rng(self.config.seed)
+                y_freq = rng.choice(n_classes, size=n, p=train_freq)
+                split_bl['freq_sampler'] = evaluate_classification(y, y_freq, _constant_proba(y_freq, n_classes), class_names=names)
+            baselines[split_name] = split_bl
         return baselines
 
     def _save_artifacts(self, result, model, preds_test, label_maker, X_test, y_test) -> None:
@@ -228,6 +245,13 @@ class ClassificationTrainer:
         y_pred = model.predict(X_test)
         cm_df = confusion_matrix_df(y_test, y_pred, label_maker.class_names())
         cm_df.to_csv(out / f'{name}_{family}_confusion.csv')
+
+def _constant_proba(y_pred: np.ndarray, n_classes: int, confidence: float = 0.9) -> np.ndarray:
+    n = len(y_pred)
+    proba = np.full((n, n_classes), (1.0 - confidence) / max(n_classes - 1, 1), dtype=float)
+    for i, c in enumerate(y_pred):
+        proba[i, int(c)] = confidence
+    return proba
 
 def _json_default(obj):
     if isinstance(obj, (np.integer,)):

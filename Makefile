@@ -4,10 +4,14 @@ CONTAINER ?= btcusdt-dev
 PORT      ?= 8888
 
 # GPU controls:
-#   GPU=all        (default) expose all GPUs
+#   GPU=all        expose all GPUs (Linux + NVIDIA)
 #   GPU=0          expose only GPU 0
-#   GPU=none       disable GPU (or set GPU= to empty)
+#   GPU=none       disable GPU (Colima/macOS default — no NVIDIA in VM)
+ifeq ($(shell uname -s),Darwin)
+GPU ?= none
+else
 GPU ?= all
+endif
 
 # Optional: increase shared memory for PyTorch DataLoader / multiprocessing
 # SHM ?= 1g
@@ -64,27 +68,25 @@ else
   DOCKER_SHM_FLAG :=
 endif
 
-# Common docker run flags:
-# - bind mount the current working directory at the same path inside the container
-# - set working dir to that path
-# - run processes as the host UID:GID to avoid file permission conflicts
-# - enable GPU if configured
-DOCKER_RUN_BASE = docker run --rm -it --name $(CONTAINER) \
+# Common docker run flags (batch: no -it; interactive: DOCKER_RUN_BASE adds -it + port)
+DOCKER_RUN = docker run --rm \
 	$(DOCKER_GPU_FLAGS) \
 	$(DOCKER_SHM_FLAG) \
 	-e NVIDIA_VISIBLE_DEVICES=all \
 	-e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
 	-e PYTHONPATH="$(WORKDIR_ABS)" \
-	-p $(PORT):8888 \
 	-v "$(WORKDIR_ABS)":"$(WORKDIR_ABS)" \
 	-w "$(WORKDIR_ABS)" \
 	-u $(UID):$(GID) \
 	-e HOME="$(WORKDIR_ABS)" \
 	-e TZ=UTC
 
+DOCKER_RUN_BASE = $(DOCKER_RUN) -it --name $(CONTAINER) \
+	-p $(PORT):8888
+
 # ------- Targets -------
 .PHONY: help build rebuild bash start exec attach stop rm logs jupyter jupyter-secure prune cuda-check nvidia-smi \
-        build-clf-dataset train-clf train-clf-sweep \
+        build-clf-dataset eda-clf-dataset train-clf train-clf-sweep train-sweep report-leaderboard \
         mlflow-up mlflow-down mlflow-check-env minio-check-running docker-image-check \
         upload-datasets s3-ls-datasets train-final train-smoke register-prd predict-prd token-transformer
 
@@ -187,15 +189,31 @@ prune:
 # ------- Classification pipeline -------
 # Build the feature matrix + sanity-check + label preview (runs in Docker)
 build-clf-dataset:
-	$(DOCKER_RUN_BASE) $(IMAGE) sh -c "cd $(WORKDIR_ABS) && python scripts/build_clf_dataset.py"
+	$(DOCKER_RUN) $(IMAGE) python scripts/build_clf_dataset.py
+
+eda-clf-dataset:
+	$(DOCKER_RUN) $(IMAGE) python scripts/eda_clf_dataset.py
+
+report-leaderboard:
+	$(DOCKER_RUN) $(IMAGE) python scripts/report_leaderboard.py
 
 # Train single run (default: vol_regime + catboost)
 train-clf:
-	$(DOCKER_RUN_BASE) $(IMAGE) sh -c "cd $(WORKDIR_ABS) && PYTHONPATH=$(WORKDIR_ABS) python scripts/train_classifier.py"
+	$(DOCKER_RUN) $(IMAGE) python scripts/train_classifier.py
 
-# Multirun sweep over all label families and models
+# Multirun sweep over all label families and models (no MLflow)
 train-clf-sweep:
-	$(DOCKER_RUN_BASE) $(IMAGE) sh -c "cd $(WORKDIR_ABS) && PYTHONPATH=$(WORKDIR_ABS) python scripts/train_classifier.py -m label=direction,large_move,vol_regime,horizon_dir,return_token model=logreg,catboost,lightgbm"
+	$(DOCKER_RUN) $(IMAGE) python scripts/train_classifier.py -m label=direction,large_move,vol_regime,horizon_dir,return_token model=logreg,catboost,lightgbm
+
+# MLflow multirun (no PRD); results visible at http://localhost:5050
+train-sweep: mlflow-check-env minio-check-running docker-image-check
+	$(DOCKER_RUN_MLFLOW) -e MLFLOW_TRACKING_URI=http://chronos_mlflow:5000 $(IMAGE) \
+	  python scripts/train_mlflow.py -m \
+	  label=vol_regime,large_move,direction \
+	  model=logreg,catboost \
+	  mlflow.promote_to_prd=false \
+	  mlflow.tracking_uri=http://chronos_mlflow:5000 \
+	  mlflow.s3_endpoint_url=http://minio:9000 cv_splits=2
 
 # ------- MLflow stack -------
 mlflow-check-env:
@@ -257,4 +275,4 @@ predict-prd: mlflow-check-env minio-check-running docker-image-check
 
 # Train token transformer (no MLflow required)
 token-transformer:
-	$(DOCKER_RUN_BASE) $(IMAGE) sh -c "cd $(WORKDIR_ABS) && PYTHONPATH=$(WORKDIR_ABS) python scripts/train_token_transformer.py"
+	$(DOCKER_RUN) $(IMAGE) python scripts/train_token_transformer.py

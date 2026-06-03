@@ -1,6 +1,7 @@
 from __future__ import annotations
 import io
 import json
+import math
 import os
 import random
 from pathlib import Path
@@ -11,6 +12,20 @@ import pandas as pd
 def _mlflow():
     from chronos_ts.mlflow_client import get_mlflow
     return get_mlflow()
+
+def _log_metric_dict(metrics_by_split: dict, prefix_split: bool = True, name_prefix: str = '') -> None:
+    mlflow = _mlflow()
+    for split, m in metrics_by_split.items():
+        if not isinstance(m, dict):
+            continue
+        for k, v in m.items():
+            if not isinstance(v, (int, float)) or isinstance(v, bool):
+                continue
+            fv = float(v)
+            if math.isnan(fv) or math.isinf(fv):
+                continue
+            key = f'{name_prefix}{k}' if name_prefix else (f'{split}_{k}' if prefix_split else k)
+            mlflow.log_metric(key, fv)
 
 def log_hydra_config(cfg: Any) -> None:
     try:
@@ -54,16 +69,11 @@ def log_classification_run(result: dict[str, Any], model: Any, X_test: pd.DataFr
         log_hydra_config(hydra_cfg)
     flat_params = _flatten_params(result, run_cfg)
     safe_log_params(flat_params)
-    for split in ('train', 'val', 'test'):
-        m = result['metrics'].get(split, {})
-        for k, v in m.items():
-            if isinstance(v, (int, float)) and (not isinstance(v, bool)):
-                mlflow.log_metric(f'{split}_{k}', float(v))
+    _log_metric_dict(result.get('metrics', {}), prefix_split=True)
     for split in ('val', 'test'):
-        bl = result.get('baselines', {}).get(split, {}).get('majority_class', {})
-        for k, v in bl.items():
-            if isinstance(v, (int, float)) and (not isinstance(v, bool)):
-                mlflow.log_metric(f'baseline_{split}_{k}', float(v))
+        for bl_name, bl_metrics in (result.get('baselines', {}).get(split) or {}).items():
+            if isinstance(bl_metrics, dict):
+                _log_metric_dict({split: bl_metrics}, prefix_split=False, name_prefix=f'baseline_{split}_{bl_name}_')
     _log_confusion_png(result, label_maker)
     _log_coverage_curve(result, label_maker)
     _log_prediction_sample(result)

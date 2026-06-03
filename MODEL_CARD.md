@@ -9,7 +9,8 @@
 | Tag | `env=PRD` |
 | MLflow experiment | `chronos-1h-classification` |
 | Load URI | `models:/chronos_1h_prd@prd` |
-| Run ID | *(populated after first `experiment_tracking.ipynb` run)* |
+| Run ID | `30df7f27995441b0a610ae808053a3ef` |
+| Registry version | `3` (`make train-final`, 2026-06-03) |
 
 ## What it does
 
@@ -41,15 +42,17 @@ Volatility is the only **forecastable** signal in the 1h BTCUSDT data — confir
 
 CatBoost is selected over LogReg for nonlinear feature interactions and better handling of the feature-null pattern in this dataset.
 
-## Key test metrics (to be updated after first training run)
+## Key metrics (`make train-final`, core dataset)
 
-| Metric | Model | Majority-class baseline |
-|---|---|---|
-| balanced_accuracy | — | 0.333 |
-| MCC | — | 0.000 |
-| ROC-AUC (macro OvR) | — | — |
-| trading_coverage | — | 1.000 |
-| trading_hit_rate | — | — |
+| Metric | Test | Val | Majority baseline (test) |
+|---|---|---|---|
+| balanced_accuracy | **0.527** | 0.580 | 0.333 |
+| MCC | 0.267 | 0.377 | 0.000 |
+| ROC-AUC (macro OvR) | **0.716** | 0.770 | — |
+| trading_coverage | 0.20 | 0.26 | — |
+| trading_hit_rate | 0.50 | 0.52 | — |
+
+MLflow UI: http://localhost:5050/#/experiments/1/runs/30df7f27995441b0a610ae808053a3ef
 
 ## Data
 

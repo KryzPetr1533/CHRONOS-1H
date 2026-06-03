@@ -11,6 +11,94 @@ Target used for supervised learning:
 
 This target shift was verified during EDA and then enforced in the training scripts.
 
+The **current production path** reframes the problem as **classification** (volatility regime, large moves, direction, return tokens) with **MLflow** tracking and a **PRD** model in the registry. See [MODEL_CARD.md](MODEL_CARD.md).
+
+---
+
+## Quick start tutorial (classification + MLflow)
+
+End-to-end workflow on a fresh machine. Requires **Docker** and the dev image (`make build` once).
+
+### 1. One-time setup
+
+```bash
+git clone <repo> && cd CHRONOS-1H
+cp infra/mlflow/.env.example infra/mlflow/.env   # MinIO + Postgres credentials
+make build                                      # image: btcusdt-dev:latest
+```
+
+On macOS (Colima), `GPU=none` is the default in the Makefile. On Linux with NVIDIA, use `GPU=all` if needed.
+
+**Important:** do not keep a top-level `mlflow/` folder in the repo — it shadows the Python `mlflow` package. The Docker stack lives in **`infra/mlflow/`**. If you have an old `mlflow/` directory: `rm -rf mlflow`.
+
+### 2. Start tracking stack
+
+```bash
+make mlflow-up
+```
+
+| Service | URL |
+|---------|-----|
+| MLflow UI | http://localhost:5050 |
+| MinIO console | http://localhost:9001 (`admin` / `password` from `.env`) |
+
+### 3. Build data and run EDA
+
+```bash
+# needs data/btcusdt_1h_merged.csv
+make build-clf-dataset
+make eda-clf-dataset          # → outputs/reports/clf_eda_summary.md
+```
+
+### 4. Train and register PRD model
+
+```bash
+make train-smoke              # fast check: logreg on rich data, MLflow run, no PRD
+make train-final              # official: CatBoost vol_regime → chronos_1h_prd@prd (~15–20 min)
+make predict-prd              # load models:/chronos_1h_prd@prd and print sample preds
+```
+
+Open the run in the UI (params, metrics, artifacts). Latest PRD run ID is recorded in [MODEL_CARD.md](MODEL_CARD.md).
+
+If registry logging fails but local artifacts exist:
+
+```bash
+make register-prd
+make predict-prd
+```
+
+### 5. Optional: sweeps and S3
+
+```bash
+make train-sweep              # Hydra multirun → several MLflow runs (no PRD)
+make report-leaderboard       # refresh outputs/reports/phase1_leaderboard.csv
+make upload-datasets          # push outputs/datasets to MinIO
+make s3-ls-datasets
+```
+
+### 6. Train without MLflow (local Hydra only)
+
+```bash
+make train-clf                # default: catboost + vol_regime
+make train-clf-sweep          # all label families × logreg/catboost/lightgbm
+```
+
+Configs live under `conf/`. Example:
+
+```bash
+docker run --rm -e PYTHONPATH="$(pwd)" -v "$(pwd):$(pwd)" -w "$(pwd)" btcusdt-dev:latest \
+  python scripts/train_classifier.py label=large_move model=catboost
+```
+
+### 7. Remote server (SSH)
+
+```bash
+ssh -L 5050:localhost:5050 -L 9001:localhost:9001 user@host
+# then open http://localhost:5050 on your laptop
+```
+
+Detailed task plans (local, gitignored): `plans/README.md`.
+
 ---
 
 ## 2. Data sources used
