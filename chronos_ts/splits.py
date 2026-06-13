@@ -1,9 +1,6 @@
 from __future__ import annotations
-
 from dataclasses import dataclass
-
 import pandas as pd
-
 
 @dataclass
 class TimeRangeSplitConfig:
@@ -13,11 +10,10 @@ class TimeRangeSplitConfig:
 
     def validate(self) -> None:
         total = self.train_frac + self.val_frac + self.test_frac
-        if abs(total - 1.0) > 1e-9:
-            raise ValueError(f"Fractions must sum to 1.0, got {total}")
+        if abs(total - 1.0) > 1e-09:
+            raise ValueError(f'Fractions must sum to 1.0, got {total}')
 
-
-def time_fraction_split(df: pd.DataFrame, config: TimeRangeSplitConfig, ts_col: str = "ts") -> dict[str, pd.DataFrame]:
+def time_fraction_split(df: pd.DataFrame, config: TimeRangeSplitConfig, ts_col: str='ts') -> dict[str, pd.DataFrame]:
     config.validate()
     df = df.sort_values(ts_col).reset_index(drop=True)
     n = len(df)
@@ -25,9 +21,8 @@ def time_fraction_split(df: pd.DataFrame, config: TimeRangeSplitConfig, ts_col: 
     n_val = int(n * config.val_frac)
     n_test = n - n_train - n_val
     if min(n_train, n_val, n_test) <= 0:
-        raise ValueError(f"Split too small: train={n_train}, val={n_val}, test={n_test}")
-
+        raise ValueError(f'Split too small: train={n_train}, val={n_val}, test={n_test}')
     train_df = df.iloc[:n_train].copy()
-    val_df = df.iloc[n_train : n_train + n_val].copy()
-    test_df = df.iloc[n_train + n_val :].copy()
-    return {"train": train_df, "val": val_df, "test": test_df}
+    val_df = df.iloc[n_train:n_train + n_val].copy()
+    test_df = df.iloc[n_train + n_val:].copy()
+    return {'train': train_df, 'val': val_df, 'test': test_df}

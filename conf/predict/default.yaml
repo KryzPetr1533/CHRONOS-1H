@@ -1,0 +1,5 @@
+# @package _global_
+predict:
+  input_csv: outputs/datasets/btcusdt_clf_core.csv
+  n_rows: 10
+  output_format: json   # json | csv | table

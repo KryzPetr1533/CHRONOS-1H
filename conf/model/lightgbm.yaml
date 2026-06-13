@@ -1,0 +1,6 @@
+# @package _global_
+model_name: lightgbm
+param_grid:
+  num_leaves: [15, 31]
+  learning_rate: [0.03, 0.05]
+  n_estimators: [300, 500]

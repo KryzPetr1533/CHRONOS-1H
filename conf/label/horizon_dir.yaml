@@ -1,0 +1,6 @@
+# @package _global_
+label:
+  target_family: horizon_dir
+  return_col: log_ret_1h
+  horizon: 6
+  dead_zone_sigma: 0.1

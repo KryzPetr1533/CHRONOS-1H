@@ -1,0 +1,8 @@
+# @package _global_
+# Built by: scripts/build_event_dataset.py --bar-type dollar
+data_csv: outputs/datasets/btcusdt_dollar_bars.csv
+ts_col: bar_end
+drop_cols:
+  - bar_start
+  - bar_end
+  - target_log_ret_bar

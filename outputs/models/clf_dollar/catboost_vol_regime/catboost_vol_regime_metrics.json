@@ -1,0 +1,455 @@
+{
+  "config": {
+    "data_csv": "outputs/datasets/btcusdt_dollar_bars.csv",
+    "output_dir": "outputs/models/clf_dollar/catboost_vol_regime",
+    "label": {
+      "target_family": "vol_regime",
+      "return_col": "log_ret_bar",
+      "horizon": 1,
+      "dead_zone_sigma": 0.1,
+      "move_quantile": 0.8,
+      "n_tokens": 5,
+      "vol_window": 6
+    },
+    "model_name": "catboost",
+    "ts_col": "bar_end",
+    "drop_cols": [
+      "bar_start",
+      "bar_end"
+    ],
+    "split": {
+      "train_frac": 0.7,
+      "val_frac": 0.15,
+      "test_frac": 0.15
+    },
+    "cv_splits": 2,
+    "n_jobs": -1,
+    "seed": 42,
+    "param_grid": {
+      "depth": [
+        4
+      ],
+      "learning_rate": [
+        0.05
+      ],
+      "n_estimators": [
+        200
+      ],
+      "l2_leaf_reg": [
+        3
+      ]
+    },
+    "abstention_threshold": 0.65,
+    "top_k_pct": 0.2
+  },
+  "label_maker": {
+    "config": {
+      "target_family": "vol_regime",
+      "return_col": "log_ret_bar",
+      "horizon": 1,
+      "dead_zone_sigma": 0.1,
+      "move_quantile": 0.8,
+      "n_tokens": 5,
+      "vol_window": 6
+    },
+    "edges": [
+      0.0031076693194192744,
+      0.004501078813588103
+    ],
+    "train_std": null,
+    "class_names": [
+      "low_vol",
+      "mid_vol",
+      "high_vol"
+    ]
+  },
+  "feature_cols": [
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "dollar_volume",
+    "n_trades",
+    "taker_buy_base",
+    "dt_seconds",
+    "log_ret_bar",
+    "rv_parkinson",
+    "rv_garman_klass",
+    "dt_scaled_rv",
+    "buy_vol_share",
+    "vol_imbalance",
+    "net_flow",
+    "buy_run_length",
+    "sell_run_length",
+    "log_dt_seconds",
+    "hour_sin",
+    "hour_cos",
+    "dow_sin",
+    "dow_cos",
+    "fund_cycle_sin",
+    "fund_cycle_cos",
+    "log_ret_bar_lag_1",
+    "log_ret_bar_lag_2",
+    "log_ret_bar_lag_3",
+    "log_ret_bar_lag_6",
+    "log_ret_bar_lag_12",
+    "log_ret_bar_lag_24",
+    "vol_imbalance_lag_1",
+    "vol_imbalance_lag_2",
+    "vol_imbalance_lag_3",
+    "vol_imbalance_lag_6",
+    "vol_imbalance_lag_12",
+    "vol_imbalance_lag_24",
+    "buy_vol_share_lag_1",
+    "buy_vol_share_lag_2",
+    "buy_vol_share_lag_3",
+    "buy_vol_share_lag_6",
+    "buy_vol_share_lag_12",
+    "buy_vol_share_lag_24",
+    "rv_parkinson_lag_1",
+    "rv_parkinson_lag_2",
+    "rv_parkinson_lag_3",
+    "rv_parkinson_lag_6",
+    "rv_parkinson_lag_12",
+    "rv_parkinson_lag_24",
+    "rv_garman_klass_lag_1",
+    "rv_garman_klass_lag_2",
+    "rv_garman_klass_lag_3",
+    "rv_garman_klass_lag_6",
+    "rv_garman_klass_lag_12",
+    "rv_garman_klass_lag_24",
+    "dt_scaled_rv_lag_1",
+    "dt_scaled_rv_lag_2",
+    "dt_scaled_rv_lag_3",
+    "dt_scaled_rv_lag_6",
+    "dt_scaled_rv_lag_12",
+    "dt_scaled_rv_lag_24",
+    "volume_lag_1",
+    "volume_lag_2",
+    "volume_lag_3",
+    "volume_lag_6",
+    "volume_lag_12",
+    "volume_lag_24",
+    "dollar_volume_lag_1",
+    "dollar_volume_lag_2",
+    "dollar_volume_lag_3",
+    "dollar_volume_lag_6",
+    "dollar_volume_lag_12",
+    "dollar_volume_lag_24",
+    "log_dt_seconds_lag_1",
+    "log_dt_seconds_lag_2",
+    "log_dt_seconds_lag_3",
+    "log_dt_seconds_lag_6",
+    "log_dt_seconds_lag_12",
+    "log_dt_seconds_lag_24",
+    "log_ret_bar_rmean_6",
+    "log_ret_bar_rstd_6",
+    "log_ret_bar_rmean_24",
+    "log_ret_bar_rstd_24",
+    "log_ret_bar_rmean_72",
+    "log_ret_bar_rstd_72",
+    "vol_imbalance_rmean_6",
+    "vol_imbalance_rstd_6",
+    "vol_imbalance_rmean_24",
+    "vol_imbalance_rstd_24",
+    "vol_imbalance_rmean_72",
+    "vol_imbalance_rstd_72",
+    "buy_vol_share_rmean_6",
+    "buy_vol_share_rstd_6",
+    "buy_vol_share_rmean_24",
+    "buy_vol_share_rstd_24",
+    "buy_vol_share_rmean_72",
+    "buy_vol_share_rstd_72",
+    "rv_parkinson_rmean_6",
+    "rv_parkinson_rstd_6",
+    "rv_parkinson_rmean_24",
+    "rv_parkinson_rstd_24",
+    "rv_parkinson_rmean_72",
+    "rv_parkinson_rstd_72",
+    "dt_scaled_rv_rmean_6",
+    "dt_scaled_rv_rstd_6",
+    "dt_scaled_rv_rmean_24",
+    "dt_scaled_rv_rstd_24",
+    "dt_scaled_rv_rmean_72",
+    "dt_scaled_rv_rstd_72",
+    "volume_rmean_6",
+    "volume_rstd_6",
+    "volume_rmean_24",
+    "volume_rstd_24",
+    "volume_rmean_72",
+    "volume_rstd_72",
+    "dollar_volume_rmean_6",
+    "dollar_volume_rstd_6",
+    "dollar_volume_rmean_24",
+    "dollar_volume_rstd_24",
+    "dollar_volume_rmean_72",
+    "dollar_volume_rstd_72",
+    "rv_bar_6",
+    "abs_ret_rmean_6",
+    "rv_bar_24",
+    "abs_ret_rmean_24",
+    "rv_bar_72",
+    "abs_ret_rmean_72"
+  ],
+  "n_classes": 3,
+  "best_params": {
+    "depth": 4,
+    "l2_leaf_reg": 3,
+    "learning_rate": 0.05,
+    "n_estimators": 200
+  },
+  "cv_best_score": 1.0333160394338374,
+  "split_sizes": {
+    "train": {
+      "n_rows": 16675,
+      "dropped_rows": 6
+    },
+    "val": {
+      "n_rows": 3568,
+      "dropped_rows": 6
+    },
+    "test": {
+      "n_rows": 3570,
+      "dropped_rows": 6
+    }
+  },
+  "baselines": {
+    "val": {
+      "majority_class": {
+        "n_samples": 3568,
+        "accuracy": 0.32931614349775784,
+        "balanced_accuracy": 0.3333333333333333,
+        "f1_macro": 0.16515566800196782,
+        "f1_weighted": 0.16316528298961228,
+        "mcc": 0.0,
+        "log_loss": 24.1738964574432,
+        "roc_auc": 0.5,
+        "pr_auc": NaN,
+        "confident_accuracy": 0.3085553997194951,
+        "confident_balanced_accuracy": 0.3333333333333333,
+        "confident_top_k_pct": 0.2,
+        "abstention_threshold": 0.65,
+        "trading_coverage": 1.0,
+        "trading_hit_rate": NaN,
+        "trading_sign_mean": NaN,
+        "trading_sharpe_annual": NaN,
+        "confusion_matrix": [
+          [
+            0,
+            1418,
+            0
+          ],
+          [
+            0,
+            1175,
+            0
+          ],
+          [
+            0,
+            975,
+            0
+          ]
+        ],
+        "class_names": [
+          "low_vol",
+          "mid_vol",
+          "high_vol"
+        ],
+        "base_rates": {
+          "low_vol": 0.39742152466367714,
+          "mid_vol": 0.32931614349775784,
+          "high_vol": 0.273262331838565
+        }
+      }
+    },
+    "test": {
+      "majority_class": {
+        "n_samples": 3570,
+        "accuracy": 0.2507002801120448,
+        "balanced_accuracy": 0.3333333333333333,
+        "f1_macro": 0.13363195222097798,
+        "f1_weighted": 0.1005047035611557,
+        "mcc": 0.0,
+        "log_loss": 27.007499388204025,
+        "roc_auc": 0.5,
+        "pr_auc": NaN,
+        "confident_accuracy": 0.18907563025210083,
+        "confident_balanced_accuracy": 0.3333333333333333,
+        "confident_top_k_pct": 0.2,
+        "abstention_threshold": 0.65,
+        "trading_coverage": 1.0,
+        "trading_hit_rate": NaN,
+        "trading_sign_mean": NaN,
+        "trading_sharpe_annual": NaN,
+        "confusion_matrix": [
+          [
+            0,
+            2302,
+            0
+          ],
+          [
+            0,
+            895,
+            0
+          ],
+          [
+            0,
+            373,
+            0
+          ]
+        ],
+        "class_names": [
+          "low_vol",
+          "mid_vol",
+          "high_vol"
+        ],
+        "base_rates": {
+          "low_vol": 0.6448179271708684,
+          "mid_vol": 0.2507002801120448,
+          "high_vol": 0.10448179271708684
+        }
+      }
+    }
+  },
+  "metrics": {
+    "train": {
+      "n_samples": 16675,
+      "accuracy": 0.5220389805097452,
+      "balanced_accuracy": 0.5220469965692159,
+      "f1_macro": 0.5185316284196149,
+      "f1_weighted": 0.5185257193597194,
+      "mcc": 0.2841222824568727,
+      "log_loss": 0.9733269769762958,
+      "roc_auc": 0.716763197616161,
+      "pr_auc": NaN,
+      "confident_accuracy": 0.7379310344827587,
+      "confident_balanced_accuracy": 0.5916185421901109,
+      "confident_top_k_pct": 0.2,
+      "abstention_threshold": 0.65,
+      "trading_coverage": 0.08275862068965517,
+      "trading_hit_rate": 0.46594202898550724,
+      "trading_sign_mean": -0.0004796330724116513,
+      "trading_sharpe_annual": -4.638208881766442,
+      "confusion_matrix": [
+        [
+          3342,
+          1281,
+          935
+        ],
+        [
+          1969,
+          2159,
+          1431
+        ],
+        [
+          1072,
+          1282,
+          3204
+        ]
+      ],
+      "class_names": [
+        "low_vol",
+        "mid_vol",
+        "high_vol"
+      ],
+      "base_rates": {
+        "low_vol": 0.33331334332833584,
+        "mid_vol": 0.3333733133433283,
+        "high_vol": 0.33331334332833584
+      }
+    },
+    "val": {
+      "n_samples": 3568,
+      "accuracy": 0.5243834080717489,
+      "balanced_accuracy": 0.5047889102031887,
+      "f1_macro": 0.46496402918842444,
+      "f1_weighted": 0.47104782569215153,
+      "mcc": 0.2858106391929337,
+      "log_loss": 0.9464024463677813,
+      "roc_auc": 0.7065459180300963,
+      "pr_auc": NaN,
+      "confident_accuracy": 0.7489481065918654,
+      "confident_balanced_accuracy": 0.6297465974885329,
+      "confident_top_k_pct": 0.2,
+      "abstention_threshold": 0.65,
+      "trading_coverage": 0.08295964125560538,
+      "trading_hit_rate": 0.47635135135135137,
+      "trading_sign_mean": -0.0004268110023591717,
+      "trading_sharpe_annual": -4.6539802674436945,
+      "confusion_matrix": [
+        [
+          1187,
+          85,
+          146
+        ],
+        [
+          794,
+          139,
+          242
+        ],
+        [
+          300,
+          130,
+          545
+        ]
+      ],
+      "class_names": [
+        "low_vol",
+        "mid_vol",
+        "high_vol"
+      ],
+      "base_rates": {
+        "low_vol": 0.39742152466367714,
+        "mid_vol": 0.32931614349775784,
+        "high_vol": 0.273262331838565
+      }
+    },
+    "test": {
+      "n_samples": 3570,
+      "accuracy": 0.6574229691876751,
+      "balanced_accuracy": 0.4174537967621978,
+      "f1_macro": 0.40249367932018804,
+      "f1_weighted": 0.5743555128942027,
+      "mcc": 0.1971755995519457,
+      "log_loss": 0.8540060695325401,
+      "roc_auc": 0.6685761261340631,
+      "pr_auc": NaN,
+      "confident_accuracy": 0.8235294117647058,
+      "confident_balanced_accuracy": 0.5780102915951972,
+      "confident_top_k_pct": 0.2,
+      "abstention_threshold": 0.65,
+      "trading_coverage": 0.06526610644257703,
+      "trading_hit_rate": 0.5536480686695279,
+      "trading_sign_mean": -0.00011545039620804267,
+      "trading_sharpe_annual": -1.8452812363805697,
+      "confusion_matrix": [
+        [
+          2203,
+          56,
+          43
+        ],
+        [
+          761,
+          58,
+          76
+        ],
+        [
+          244,
+          43,
+          86
+        ]
+      ],
+      "class_names": [
+        "low_vol",
+        "mid_vol",
+        "high_vol"
+      ],
+      "base_rates": {
+        "low_vol": 0.6448179271708684,
+        "mid_vol": 0.2507002801120448,
+        "high_vol": 0.10448179271708684
+      }
+    }
+  }
+}

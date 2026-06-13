@@ -1,0 +1,10 @@
+# @package _global_
+# Local MLflow + MinIO stack (docker compose in mlflow/)
+mlflow:
+  tracking_uri: http://localhost:5050
+  experiment_name: chronos-1h-classification
+  s3_endpoint_url: http://localhost:9000
+  aws_access_key_id: admin
+  aws_secret_access_key: password
+  registered_model_name: chronos_1h_prd
+  promote_to_prd: false

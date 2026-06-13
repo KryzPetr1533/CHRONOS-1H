@@ -11,6 +11,180 @@ Target used for supervised learning:
 
 This target shift was verified during EDA and then enforced in the training scripts.
 
+The **current production path** reframes the problem as **classification** (volatility regime, large moves, direction, return tokens) with **MLflow** tracking and a **PRD** model in the registry. See [MODEL_CARD.md](MODEL_CARD.md).
+
+---
+
+## Quick start tutorial (classification + MLflow)
+
+End-to-end workflow on a fresh machine. Requires **Docker** and the dev image (`make build` once).
+
+### 1. One-time setup
+
+```bash
+git clone <repo> && cd CHRONOS-1H
+cp infra/mlflow/.env.example infra/mlflow/.env   # MinIO + Postgres credentials
+make build                                      # image: btcusdt-dev:latest
+```
+
+On macOS (Colima), `GPU=none` is the default in the Makefile. On Linux with NVIDIA, use `GPU=all` if needed.
+
+**Important:** do not keep a top-level `mlflow/` folder in the repo — it shadows the Python `mlflow` package. The Docker stack lives in **`infra/mlflow/`**. If you have an old `mlflow/` directory: `rm -rf mlflow`.
+
+### 2. Start tracking stack
+
+```bash
+make mlflow-up
+```
+
+| Service | URL |
+|---------|-----|
+| MLflow UI | http://localhost:5050 |
+| MinIO console | http://localhost:9001 (`admin` / `password` from `.env`) |
+
+### 3. Build data and run EDA
+
+```bash
+# needs data/btcusdt_1h_merged.csv
+make build-clf-dataset
+make eda-clf-dataset          # → outputs/reports/clf_eda_summary.md
+```
+
+### 4. Train and register PRD model
+
+```bash
+make train-smoke              # fast check: logreg on rich data, MLflow run, no PRD
+make train-final              # official: CatBoost vol_regime → chronos_1h_prd@prd (~15–20 min)
+make predict-prd              # load models:/chronos_1h_prd@prd and print sample preds
+```
+
+Open the run in the UI (params, metrics, artifacts). Latest PRD run ID is recorded in [MODEL_CARD.md](MODEL_CARD.md).
+
+If registry logging fails but local artifacts exist:
+
+```bash
+make register-prd
+make predict-prd
+```
+
+### 5. Optional: sweeps and S3
+
+```bash
+make train-sweep              # Hydra multirun → several MLflow runs (no PRD)
+make report-leaderboard       # refresh outputs/reports/phase1_leaderboard.csv
+make upload-datasets          # push outputs/datasets to MinIO
+make s3-ls-datasets
+```
+
+### 6. Train without MLflow (local Hydra only)
+
+```bash
+make train-clf                # default: catboost + vol_regime
+make train-clf-sweep          # all label families × logreg/catboost/lightgbm
+```
+
+Configs live under `conf/`. Example:
+
+```bash
+docker run --rm -e PYTHONPATH="$(pwd)" -v "$(pwd):$(pwd)" -w "$(pwd)" btcusdt-dev:latest \
+  python scripts/train_classifier.py label=large_move model=catboost
+```
+
+### 7. Troubleshooting MLflow
+
+| Symptom | Fix |
+|---------|-----|
+| `ModuleNotFoundError: No module named 'mlflow'` after training | Image built before `mlflow` was in `requirements.txt`. Run **`make rebuild`**, then retry or backfill. |
+| Training OK, UI empty | Same as above. Artifacts are under `outputs/models/`; push them to MLflow without retraining: **`make mlflow-backfill-all`** (after rebuild). |
+| `make train-experiment` fails immediately | **`make docker-image-check`** verifies `import mlflow` inside the image. |
+| UI URL | Host browser: **http://127.0.0.1:5050** (Compose maps `5050:5000`). Inside Docker training use `http://chronos_mlflow:5000`. |
+| `curl :5000` fails on host | Expected — use port **5050** on the host. |
+
+```bash
+make rebuild
+make mlflow-up
+make mlflow-backfill-all    # if models already trained locally
+```
+
+### 8. Remote server (SSH)
+
+```bash
+ssh -L 5050:localhost:5050 -L 9001:localhost:9001 user@host
+# then open http://localhost:5050 on your laptop
+```
+
+Detailed task plans (local, gitignored): `plans/README.md`.
+
+### Legacy setup: neural networks (next-hour **return** regression)
+
+The **original** task predicted `target_log_ret_1h` (continuous). Tree and neural models are in `legacy/`; active entry points:
+
+| Step | Command | Notes |
+|------|---------|--------|
+| Build datasets | `make build-regression-datasets` | `btcusdt_core_tabular.csv` + `btcusdt_core_seq_small.csv` |
+| GRU/LSTM (full) | `make train-seq` | 4 configs, ~25 epochs each; uses PyTorch |
+| Quick smoke | `make train-seq-smoke` | 1 GRU, 5 epochs |
+| + MLflow | `make train-seq-smoke-mlflow` | Needs `make mlflow-up`; experiment `chronos-1h-regression-seq` |
+| Tabular Ridge | `make train-ridge-core` | sklearn pipeline via `train_model.py` |
+| TimeXer | `make train-timexer` | Heavy (PyTorch Forecasting) |
+| Chronos-2 | `make train-chronos2` | AutoGluon; needs `chronos2_panel.csv` |
+
+Artifacts: `outputs/models/seq_core_small/` (`seq_metrics.json`, `seq_test_predictions.csv`).
+
+On Linux with NVIDIA: `make train-seq GPU=all`. Compare runs in MLflow UI (http://localhost:5050) under experiment **chronos-1h-regression-seq**.
+
+Direct CLI:
+
+```bash
+python scripts/train_seq.py --quick --epochs 5 --mlflow \
+  --mlflow-tracking-uri http://localhost:5050
+```
+
+### Unified experiments (OOP + MLflow)
+
+All trainers share one pattern: subclass `BaseExperiment`, implement `fit()`, call `run(mlflow=MLflowConfig(...))`.
+
+| Piece | Path |
+|-------|------|
+| Base class | `chronos_ts/experiments/base.py` |
+| Registry | `chronos_ts/experiments/registry.py` |
+| CLI | `scripts/train_experiment.py` |
+
+Registered names: `classification`, `seq`, `ridge`, `catboost_reg`, `timexer`, `patchtst`, `chronos2`, `har_vol`, `garch`.
+
+```bash
+# Classification still uses Hydra (wraps ClassificationExperiment internally)
+make train-final
+
+# Legacy regression with MLflow
+make mlflow-up
+make build-regression-datasets
+make train-experiment EXPERIMENT=seq EXPERIMENT_QUICK=1    # GRU smoke
+make train-experiment EXPERIMENT=ridge                   # Ridge tabular
+make train-legacy-mlflow-smoke                             # seq + ridge
+
+# Or directly
+python scripts/train_experiment.py seq --quick --epochs 5 \
+  --tracking-uri http://localhost:5050
+```
+
+Extend with a new experiment:
+
+```python
+from chronos_ts.experiments.base import BaseExperiment
+from chronos_ts.experiments.types import ExperimentResult, MLflowConfig
+
+class MyExperiment(BaseExperiment):
+    name = "my_model"
+    default_mlflow_experiment = "chronos-1h-my-model"
+
+    def fit(self, **kwargs) -> ExperimentResult:
+        ...
+        return ExperimentResult(kind="regression", name=self.name, ...)
+
+MyExperiment().run(mlflow=MLflowConfig(experiment_name="chronos-1h-my-model"))
+```
+
 ---
 
 ## 2. Data sources used
